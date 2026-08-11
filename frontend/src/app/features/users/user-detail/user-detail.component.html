@@ -1,0 +1,376 @@
+<div class="space-y-8 animate-fadeIn pb-12">
+  
+  <!-- Top Navigation & Action Bar -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <button (click)="goBack()" 
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs sm:text-sm font-semibold shadow-sm transition-all cursor-pointer">
+      <span class="material-icons text-base">arrow_back</span>
+      <span>Back to Member Directory</span>
+    </button>
+
+    <div *ngIf="user()" class="flex flex-wrap items-center gap-2">
+      <!-- Status Toggle Button -->
+      <button (click)="toggleActivation()"
+              [ngClass]="user()?.isActive ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20' : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'"
+              class="px-4 py-2.5 rounded-2xl border text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer">
+        <span class="material-icons text-base">{{ user()?.isActive ? 'block' : 'check_circle' }}</span>
+        <span>{{ user()?.isActive ? 'Deactivate Account' : 'Activate Account' }}</span>
+      </button>
+
+      <!-- Password Reset Button -->
+      <button (click)="resetPassword()"
+              class="px-4 py-2.5 rounded-2xl bg-sky-500/10 text-sky-600 border border-sky-500/20 hover:bg-sky-500/20 text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer">
+        <span class="material-icons text-base">key</span>
+        <span>Reset Password</span>
+      </button>
+
+      <!-- Soft Delete Button -->
+      <button (click)="deleteUser()"
+              class="px-4 py-2.5 rounded-2xl bg-rose-500/10 text-rose-600 border border-rose-500/20 hover:bg-rose-500/20 text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer">
+        <span class="material-icons text-base">delete_outline</span>
+        <span>Delete Member</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State Spinner -->
+  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center p-16 space-y-4">
+    <div class="h-12 w-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Loading member profile details...</p>
+  </div>
+
+  <!-- Error State Banner -->
+  <div *ngIf="error()" class="p-6 rounded-3xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-sm flex items-center gap-3">
+    <span class="material-icons text-2xl text-rose-500">error</span>
+    <span>{{ error() }}</span>
+  </div>
+
+  <!-- Profile Content Container -->
+  <div *ngIf="!isLoading() && user()" class="space-y-8">
+    
+    <!-- HEADER HERO BANNER CARD -->
+    <div class="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 p-6 sm:p-8 shadow-xl dark:shadow-2xl">
+      <!-- Background decorative glow -->
+      <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary-500/10 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
+        <!-- Avatar / Profile Picture -->
+        <div class="relative shrink-0">
+          <div class="h-28 w-28 sm:h-32 sm:w-32 rounded-3xl overflow-hidden bg-gradient-to-br from-primary-500 to-indigo-600 p-1 shadow-2xl">
+            <div class="h-full w-full rounded-[22px] bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden">
+              <img *ngIf="user()?.profilePicture" [src]="user()?.profilePicture" class="h-full w-full object-cover">
+              <span *ngIf="!user()?.profilePicture" class="text-3xl sm:text-4xl font-extrabold text-primary-600 dark:text-primary-400">
+                {{ getInitials(user()!) }}
+              </span>
+            </div>
+          </div>
+          <!-- Role Badge Over Avatar -->
+          <span [ngClass]="user()?.role === 'ADMIN' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-200'"
+                class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md">
+            {{ user()?.role }}
+          </span>
+        </div>
+
+        <!-- Primary Member Details -->
+        <div class="flex-1 space-y-3">
+          <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {{ user()?.firstName }} {{ user()?.fatherName }} {{ user()?.grandfatherName }}
+            </h1>
+            <span [ngClass]="user()?.isActive ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : 'bg-slate-500/15 text-slate-500 dark:text-slate-400 border-slate-500/30'"
+                  class="px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5">
+              <span class="h-2 w-2 rounded-full" [ngClass]="user()?.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+              <span>{{ user()?.isActive ? 'Active Member' : 'Inactive' }}</span>
+            </span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+            <span class="text-primary-600 dark:text-primary-400 font-bold">&#64;{{ user()?.username }}</span>
+            <span class="mx-2">•</span>
+            <span>Sunday School Member</span>
+          </p>
+
+          <!-- Quick Information Badges Grid -->
+          <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+            <!-- Email -->
+            <div class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <span class="material-icons text-base text-primary-500">email</span>
+              <span>{{ user()?.email }}</span>
+            </div>
+
+            <!-- Phone -->
+            <div class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <span class="material-icons text-base text-emerald-500">phone</span>
+              <span>{{ user()?.phoneNumber }}</span>
+            </div>
+
+            <!-- Service Sub-section -->
+            <div *ngIf="user()?.serviceSubSection" class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <span class="material-icons text-base text-indigo-500">work_outline</span>
+              <span>{{ user()?.serviceSubSection }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SECTION 1: PERSONAL INFORMATION ================= -->
+    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+      <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="h-10 w-10 rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-base shadow-inner">
+          <span class="material-icons text-xl">person</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec1Title') }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Personal details and identification</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- First Name -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f2_firstName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.firstName || '-' }}</p>
+        </div>
+
+        <!-- Father's Name -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f3_fatherName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.fatherName || user()?.lastName || '-' }}</p>
+        </div>
+
+        <!-- Grandfather's Name -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f4_grandfatherName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.grandfatherName || '-' }}</p>
+        </div>
+
+        <!-- Gender -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f5_gender') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.gender || '-' }}</p>
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f7_dob') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">
+            {{ user()?.dateOfBirth ? (user()?.dateOfBirth | date:'mediumDate') : '-' }}
+          </p>
+        </div>
+
+        <!-- Marital Status -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f8_maritalStatus') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.maritalStatus || '-' }}</p>
+        </div>
+
+        <!-- Spouse Name (If married) -->
+        <div *ngIf="user()?.spouseName" class="space-y-1 sm:col-span-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f9_spouseName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.spouseName }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SECTION 2: CONTACT & EMERGENCY INFORMATION ================= -->
+    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+      <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base shadow-inner">
+          <span class="material-icons text-xl">contact_phone</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec2Title') }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Phone numbers, email, and emergency contact</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Phone Number -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f10_phone') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-icons text-base text-emerald-500">call</span>
+            <span>{{ user()?.phoneNumber || '-' }}</span>
+          </p>
+        </div>
+
+        <!-- Emergency Contact Name -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f11_emergencyName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.emergencyContactName || '-' }}</p>
+        </div>
+
+        <!-- Emergency Contact Phone -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f12_emergencyPhone') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-icons text-base text-rose-500">contact_support</span>
+            <span>{{ user()?.emergencyContactPhone || '-' }}</span>
+          </p>
+        </div>
+
+        <!-- Uses Telegram -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f13_telegram') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-icons text-base text-sky-500">send</span>
+            <span>{{ user()?.usesTelegram || 'No' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SECTION 3: EDUCATIONAL & PROFESSIONAL BACKGROUND ================= -->
+    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+      <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-base shadow-inner">
+          <span class="material-icons text-xl">school</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec3Title') }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Academic background and qualifications</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <!-- Education Level -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f14_eduLevel') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.educationLevel || '-' }}</p>
+        </div>
+
+        <!-- Institution -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f15_institution') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.graduationInstitution || '-' }}</p>
+        </div>
+
+        <!-- Field of Study -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f16_fieldOfStudy') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.fieldOfStudy || '-' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SECTION 4: SUNDAY SCHOOL & SERVICE DETAILS ================= -->
+    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+      <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-base shadow-inner">
+          <span class="material-icons text-xl">church</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec4Title') }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Sunday School grade, department, and parish service history</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Joined Year -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f17_joinedYear') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.joinedYear || '-' }}</p>
+        </div>
+
+        <!-- Grew Up in Children Class -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f18_grewUp') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.grewUpInChildrenClass || 'No' }}</p>
+        </div>
+
+        <!-- Sunday School Grade -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f19_ssGrade') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.sundaySchoolGrade || '-' }}</p>
+        </div>
+
+        <!-- Reason if not studying -->
+        <div *ngIf="user()?.notStudyingReason" class="space-y-1 sm:col-span-3">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f20_whyNotStudying') }}</span>
+          <p class="text-sm font-medium text-slate-700 dark:text-slate-300 italic bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+            "{{ user()?.notStudyingReason }}"
+          </p>
+        </div>
+
+        <!-- Sub-section Service -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f21_subSection') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.serviceSubSection || '-' }}</p>
+        </div>
+
+        <!-- Served in another Parish -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f22_servedOtherParish') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.servedInOtherParish || 'No' }}</p>
+        </div>
+
+        <!-- Previous Sub-section -->
+        <div *ngIf="user()?.previousServiceSubSection" class="space-y-1 sm:col-span-3">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f23_prevSubSection') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.previousServiceSubSection }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SECTION 5: SPIRITUAL LIFE (FATHER CONFESSOR) ================= -->
+    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+      <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="h-10 w-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-base shadow-inner">
+          <span class="material-icons text-xl">auto_awesome</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec5Title') }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Father confessor and spiritual guidance information</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <!-- Has Father Confessor -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f24_hasFatherConfessor') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.hasFatherConfessor || '-' }}</p>
+        </div>
+
+        <!-- Confessor Name -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f25_fcName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.fatherConfessorName || '-' }}</p>
+        </div>
+
+        <!-- Confessor Parish -->
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f26_fcParish') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user()?.fatherConfessorParish || '-' }}</p>
+        </div>
+
+        <!-- Confessor Phone -->
+        <div *ngIf="user()?.fatherConfessorPhone" class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f27_fcPhone') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-icons text-base text-sky-500">phone</span>
+            <span>{{ user()?.fatherConfessorPhone }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIT FOOTER METADATA CARD -->
+    <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-base">fingerprint</span>
+        <span>ID: <code class="font-mono font-bold text-slate-700 dark:text-slate-300">{{ user()?._id }}</code></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-base">schedule</span>
+        <span>Created: {{ user()?.createdAt | date:'medium' }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-base">update</span>
+        <span>Last Updated: {{ user()?.updatedAt | date:'medium' }}</span>
+      </div>
+    </div>
+
+  </div>
+</div>

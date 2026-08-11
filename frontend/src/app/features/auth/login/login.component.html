@@ -1,0 +1,109 @@
+<div class="w-full max-w-md mx-auto bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 shadow-xl dark:shadow-2xl space-y-6 transition-colors duration-300">
+  
+  <!-- Header with Brand, Language Toggle & Theme Toggle -->
+  <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-5">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-2xl bg-primary-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
+        <span class="material-icons text-white text-2xl">bubble_chart</span>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Finot</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Sign in to Console</p>
+      </div>
+    </div>
+
+    <!-- Toggles Group (Theme & Language) -->
+    <div class="flex items-center gap-2">
+      <!-- Light / Dark Theme Toggle Button -->
+      <button (click)="themeService.toggleTheme()" 
+              title="Toggle Light / Dark Theme"
+              class="h-8 w-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-all">
+        <span class="material-icons text-sm">{{ themeService.currentTheme() === 'dark' ? 'wb_sunny' : 'nightlight_round' }}</span>
+      </button>
+
+      <!-- Language Switcher Toggle -->
+      <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-950/80 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+        <button (click)="langService.setLanguage('am')" 
+                [ngClass]="langService.currentLang() === 'am' ? 'bg-primary-500 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">🇪🇹 አማርኛ</button>
+        <button (click)="langService.setLanguage('en')" 
+                [ngClass]="langService.currentLang() === 'en' ? 'bg-primary-500 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">🇬🇧 EN</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+      {{ langService.currentLang() === 'am' ? 'እንኳን በደህና መጡ' : 'Welcome back' }}
+    </h2>
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+      {{ langService.currentLang() === 'am' ? 'እባክዎን ለመግባት የመታወቂያ መረጃዎን ያስገቡ' : 'Please enter your username/email and password to sign in' }}
+    </p>
+  </div>
+
+  <!-- General Error Panel -->
+  <div *ngIf="errorMessage()" class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2.5">
+    <span class="material-icons text-base text-rose-500">error_outline</span>
+    <span>{{ errorMessage() }}</span>
+  </div>
+
+  <!-- Login Form -->
+  <form [formGroup]="loginForm" (submit)="onSubmit()" class="space-y-4">
+    
+    <!-- Username or Email Field -->
+    <div>
+      <label for="usernameOrEmail" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+        {{ langService.currentLang() === 'am' ? 'የመጠቀሚያ ስም ወይም ኢሜይል' : 'Username or Email' }} <span class="text-rose-500">*</span>
+      </label>
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500">
+          <span class="material-icons text-lg">alternate_email</span>
+        </span>
+        <input type="text" id="usernameOrEmail" formControlName="usernameOrEmail"
+               class="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-primary-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm outline-none transition-all"
+               [placeholder]="langService.currentLang() === 'am' ? 'ኢሜይል ወይም የመጠቀሚያ ስም ያስገቡ' : 'Enter username or email'"
+               [ngClass]="{'border-rose-500': hasError('usernameOrEmail')}">
+      </div>
+      <span *ngIf="hasError('usernameOrEmail')" class="text-rose-500 text-xs mt-1 block">Username or Email is required</span>
+    </div>
+
+    <!-- Password Field -->
+    <div>
+      <label for="password" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+        {{ langService.currentLang() === 'am' ? 'የይለፍ ቃል' : 'Password' }} <span class="text-rose-500">*</span>
+      </label>
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500">
+          <span class="material-icons text-lg">lock</span>
+        </span>
+        <input [type]="showPassword() ? 'text' : 'password'" id="password" formControlName="password"
+               class="w-full pl-10 pr-10 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-primary-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm outline-none transition-all"
+               placeholder="••••••••"
+               [ngClass]="{'border-rose-500': hasError('password')}">
+        <button type="button" (click)="togglePasswordVisibility()" 
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+          <span class="material-icons text-lg">{{ showPassword() ? 'visibility' : 'visibility_off' }}</span>
+        </button>
+      </div>
+      <span *ngIf="hasError('password')" class="text-rose-500 text-xs mt-1 block">Password is required</span>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" [disabled]="loginForm.invalid || isLoading()"
+            class="w-full py-3.5 px-4 mt-2 rounded-2xl bg-primary-500 hover:bg-primary-600 disabled:bg-primary-500/50 text-white font-semibold text-sm shadow-xl shadow-primary-500/25 focus:outline-none transition-all flex items-center justify-center gap-2">
+      <span *ngIf="isLoading()" class="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+      <span>{{ isLoading() ? (langService.currentLang() === 'am' ? 'በመግባት ላይ...' : 'Signing in...') : (langService.currentLang() === 'am' ? 'ይግቡ' : 'Sign In') }}</span>
+      <span *ngIf="!isLoading()" class="material-icons text-lg">arrow_forward</span>
+    </button>
+
+    <!-- Footer Link to Register -->
+    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+      <span>{{ langService.currentLang() === 'am' ? 'መለያ የለዎትም?' : "Don't have an account?" }}</span>
+      <a routerLink="/auth/register" class="text-primary-600 dark:text-primary-400 hover:underline font-bold ml-1">
+        {{ langService.currentLang() === 'am' ? 'አዲስ መለያ ይመዝገቡ' : 'Register Here' }}
+      </a>
+    </div>
+
+  </form>
+</div>

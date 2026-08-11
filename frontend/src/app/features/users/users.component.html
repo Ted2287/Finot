@@ -1,0 +1,451 @@
+<div class="space-y-6 font-sans">
+  
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Sunday School Member Directory</h1>
+      <p class="text-slate-500 dark:text-slate-400 mt-1">Manage, audit, activate, and filter member profiles and Sunday school details.</p>
+    </div>
+    <button (click)="openCreateModal()" class="flex items-center gap-2 px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-sm font-semibold shadow-premium transition-all duration-200">
+      <span class="material-icons text-sm">person_add</span>
+      <span>Add New Member</span>
+    </button>
+  </div>
+
+  <!-- Filters & Search Bar Card -->
+  <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl p-4 md:p-6 shadow-premium flex flex-col md:flex-row md:items-center justify-between gap-4">
+    
+    <!-- Search -->
+    <div class="relative flex-1 max-w-md">
+      <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+        <span class="material-icons text-lg">search</span>
+      </span>
+      <input type="text" (input)="onSearch($event)"
+             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500/50 focus:ring-2 focus:ring-primary-500/10 transition-all"
+             placeholder="Search by name, father name, email, phone...">
+    </div>
+
+    <!-- Filters Group -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Role -->
+      <div>
+        <select (change)="onFilterRole($event)"
+                class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-primary-500/50 transition-all">
+          <option value="">All Roles</option>
+          <option value="ADMIN">Admin</option>
+          <option value="USER">User</option>
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <select (change)="onFilterStatus($event)"
+                class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-primary-500/50 transition-all">
+          <option value="">All Statuses</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Directory Table Card -->
+  <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl shadow-premium overflow-hidden">
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-slate-800/50 text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">
+            <th class="py-3.5 px-6">Member Name & Contact</th>
+            <th class="py-3.5 px-6">Role</th>
+            <th class="py-3.5 px-6">Sunday School Service</th>
+            <th class="py-3.5 px-6">Father Confessor</th>
+            <th class="py-3.5 px-6">Status</th>
+            <th class="py-3.5 px-6 text-right">Actions</th>
+          </tr>
+        </thead>
+        
+        <tbody class="divide-y divide-slate-100/50 dark:divide-slate-800/40 text-slate-600 dark:text-slate-300">
+          <tr *ngFor="let user of users()" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
+            
+            <!-- Avatar & Identity Info -->
+            <td class="py-4 px-6">
+              <a [routerLink]="['/users', user._id]" class="flex items-center gap-3 group cursor-pointer">
+                <div class="h-10 w-10 rounded-xl bg-primary-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center text-primary-500 flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <img *ngIf="user.profilePicture" [src]="'http://localhost:5000/' + user.profilePicture" alt="avatar" class="h-full w-full object-cover">
+                  <span *ngIf="!user.profilePicture" class="material-icons text-xl">person</span>
+                </div>
+                <div>
+                  <div class="font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary-500 transition-colors">
+                    {{ user.firstName }} {{ user.fatherName }} {{ user.grandfatherName }}
+                  </div>
+                  <div class="text-xs text-slate-400 leading-normal">{{ user.email }} • {{ user.phoneNumber || 'N/A' }}</div>
+                  <div class="text-[10px] text-slate-400 font-mono leading-none">&#64;{{ user.username }}</div>
+                </div>
+              </a>
+            </td>
+
+            <!-- Role badge -->
+            <td class="py-4 px-6">
+              <span [ngClass]="user.role === 'ADMIN' ? 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" 
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                {{ user.role }}
+              </span>
+            </td>
+
+            <!-- Sunday School Service fields -->
+            <td class="py-4 px-6 text-xs">
+              <div class="space-y-0.5">
+                <div class="font-semibold text-slate-800 dark:text-slate-200">
+                  {{ user.serviceSubSection || 'No Department' }}
+                </div>
+                <div class="text-slate-400 text-[11px]">Grade: {{ user.sundaySchoolGrade || 'N/A' }} • Joined: {{ user.joinedYear || 'N/A' }}</div>
+              </div>
+            </td>
+
+            <!-- Father Confessor -->
+            <td class="py-4 px-6 text-xs">
+              <div class="space-y-0.5">
+                <div class="font-medium text-slate-800 dark:text-slate-200">
+                  {{ user.fatherConfessorName || 'N/A' }}
+                </div>
+                <div class="text-slate-400 text-[11px] truncate max-w-xs">{{ user.fatherConfessorParish || '' }}</div>
+              </div>
+            </td>
+
+            <!-- Account status toggle display -->
+            <td class="py-4 px-6">
+              <button (click)="toggleActivation(user)" 
+                      [ngClass]="user.isActive ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-500/20'" 
+                      class="px-2.5 py-0.5 rounded-full text-[10px] font-bold hover:scale-105 transition-transform flex items-center gap-1">
+                <span class="h-1.5 w-1.5 rounded-full" [ngClass]="user.isActive ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                <span>{{ user.isActive ? 'Active' : 'Inactive' }}</span>
+              </button>
+            </td>
+
+            <!-- Action buttons -->
+            <td class="py-4 px-6 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a [routerLink]="['/users', user._id]" title="View detailed profile"
+                   class="p-1.5 rounded-lg border border-primary-200 dark:border-primary-900/50 hover:bg-primary-50 dark:hover:bg-primary-950/30 text-primary-600 dark:text-primary-400 transition-colors">
+                  <span class="material-icons text-sm">visibility</span>
+                </a>
+                <button (click)="openEditModal(user)" title="Edit profile details"
+                        class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors">
+                  <span class="material-icons text-sm">edit</span>
+                </button>
+                <button (click)="openResetModal(user)" title="Reset user password"
+                        class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors">
+                  <span class="material-icons text-sm">vpn_key</span>
+                </button>
+                <button (click)="deleteUser(user)" title="Delete user"
+                        class="p-1.5 rounded-lg border border-rose-200 dark:border-rose-950 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 transition-colors">
+                  <span class="material-icons text-sm">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty state -->
+          <tr *ngIf="users().length === 0 && !isLoading()">
+            <td colspan="6" class="py-16 text-center">
+              <div class="flex flex-col items-center">
+                <span class="material-icons text-slate-300 dark:text-slate-700 text-5xl">people_outline</span>
+                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mt-3">No members found</h3>
+                <p class="text-xs text-slate-400 mt-1">Try widening your filters or search term.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="h-16 flex items-center justify-between px-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-darkBg-100/10">
+      <span class="text-xs text-slate-400">Page {{ currentPage() }} of {{ totalPages() }} ({{ totalUsers() }} total members)</span>
+      <div class="flex items-center gap-2">
+        <button [disabled]="currentPage() === 1" (click)="onPrevPage()"
+                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors">
+          Previous
+        </button>
+        <button [disabled]="currentPage() === totalPages()" (click)="onNextPage()"
+                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors">
+          Next
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== CREATE / EDIT MODAL OVERLAY ==================== -->
+  <div *ngIf="isModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md">
+    <div class="w-full max-w-4xl bg-white dark:bg-darkBg-100 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl p-6 relative flex flex-col max-h-[90vh]">
+      
+      <!-- Close Button -->
+      <button (click)="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+        <span class="material-icons">close</span>
+      </button>
+      
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4 pr-10">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+            {{ editUserId() ? 'Edit Member Profile' : 'Add New Sunday School Member' }}
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">Enter details for all 5 sections of Sunday School Member Registration</p>
+        </div>
+
+        <!-- Language Switcher in Modal -->
+        <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+          <button (click)="langService.setLanguage('am')" 
+                  [ngClass]="langService.currentLang() === 'am' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400'"
+                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all">🇪🇹 አማርኛ</button>
+          <button (click)="langService.setLanguage('en')" 
+                  [ngClass]="langService.currentLang() === 'en' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400'"
+                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all">🇬🇧 EN</button>
+        </div>
+      </div>
+
+      <form [formGroup]="userForm" (submit)="onSubmitForm()" class="space-y-6 overflow-y-auto pr-2 custom-scroll flex-1">
+        
+        <!-- Credentials (For new members) -->
+        <div *ngIf="!editUserId()" class="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-3">
+          <h3 class="text-xs font-bold uppercase text-primary-500">Credentials (የመለያ መረጃዎች)</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Email *</label>
+              <input type="email" formControlName="email" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Username *</label>
+              <input type="text" formControlName="username" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Password *</label>
+              <input type="password" formControlName="password" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Personal Info -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">1. {{ langService.t('sec1Title') }}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f2_firstName') }} *</label>
+              <input type="text" formControlName="firstName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f3_fatherName') }} *</label>
+              <input type="text" formControlName="fatherName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f4_grandfatherName') }} *</label>
+              <input type="text" formControlName="grandfatherName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f5_gender') }} *</label>
+              <select formControlName="gender" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="">Select</option>
+                <option value="Male">ወንድ (Male)</option>
+                <option value="Female">ሴት (Female)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f8_maritalStatus') }} *</label>
+              <select formControlName="maritalStatus" (change)="onModalMaritalStatusChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="">Select</option>
+                <option value="Single">ያላገባ (Single)</option>
+                <option value="Married">ያገባ (Married)</option>
+              </select>
+            </div>
+            <div *ngIf="isModalMarried()">
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f9_spouseName') }} *</label>
+              <input type="text" formControlName="spouseName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Contact Info -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">2. {{ langService.t('sec2Title') }}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f10_phone') }} *</label>
+              <input type="tel" formControlName="phoneNumber" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f11_emergencyName') }} *</label>
+              <input type="text" formControlName="emergencyContactName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f12_emergencyPhone') }} *</label>
+              <input type="tel" formControlName="emergencyContactPhone" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f13_telegram') }}</label>
+              <select formControlName="usesTelegram" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="Yes">አዎ (Yes)</option>
+                <option value="No">አይ (No)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Educational Background -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">3. {{ langService.t('sec3Title') }}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f14_eduLevel') }}</label>
+              <select formControlName="educationLevel" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="">Select</option>
+                <option value="Grade 8-10">Grade 8-10</option>
+                <option value="High School">High School</option>
+                <option value="Diploma">Diploma</option>
+                <option value="Degree">Degree</option>
+                <option value="Masters">Masters</option>
+                <option value="PhD">PhD</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f15_institution') }}</label>
+              <input type="text" formControlName="graduationInstitution" list="admin-uni-list" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+              <datalist id="admin-uni-list">
+                <option *ngFor="let uni of universities" [value]="uni"></option>
+              </datalist>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f16_fieldOfStudy') }}</label>
+              <input type="text" formControlName="fieldOfStudy" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Sunday School Details -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">4. {{ langService.t('sec4Title') }}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f17_joinedYear') }}</label>
+              <input type="text" formControlName="joinedYear" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f18_grewUp') }}</label>
+              <select formControlName="grewUpInChildrenClass" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="Yes">አዎ (Yes)</option>
+                <option value="No">አይ (No)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f19_ssGrade') }}</label>
+              <select formControlName="sundaySchoolGrade" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="">Select</option>
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+                <option value="11">Grade 11</option>
+                <option value="12">Grade 12</option>
+                <option value="Not Studying">እየተማርኩ አይደለም</option>
+              </select>
+            </div>
+            <div *ngIf="isNotStudying()" class="sm:col-span-3">
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f20_whyNotStudying') }}</label>
+              <textarea formControlName="notStudyingReason" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f21_subSection') }}</label>
+              <select formControlName="serviceSubSection" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="">Select</option>
+                <option value="Education Dept">ትምህርት ክፍል</option>
+                <option value="Children Dept">ህፃናት</option>
+                <option value="Office">ጽ/ቤት</option>
+                <option value="Development Dept">ልማት ክፍል</option>
+                <option value="Purchasing Dept">ግዥ ክፍል</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f22_servedOtherParish') }}</label>
+              <select formControlName="servedInOtherParish" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="No">አይ (No)</option>
+                <option value="Yes">አዎ (Yes)</option>
+              </select>
+            </div>
+            <div *ngIf="hasServedOtherParish()" class="sm:col-span-3">
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f23_prevSubSection') }}</label>
+              <input type="text" formControlName="previousServiceSubSection" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">System Role Permission *</label>
+              <select formControlName="role" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="USER">User (Standard Member)</option>
+                <option value="ADMIN">Admin (System Administrator)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Father Confessor -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">5. {{ langService.t('sec5Title') }}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f24_hasFatherConfessor') }} *</label>
+              <select formControlName="hasFatherConfessor" (change)="onFatherConfessorChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+                <option value="">Select</option>
+                <option value="Yes">አዎ አለኝ (Yes)</option>
+                <option value="No">አይ የለኝም (No)</option>
+              </select>
+            </div>
+            <div *ngIf="hasFatherConfessor()">
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f25_fcName') }} *</label>
+              <input type="text" formControlName="fatherConfessorName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div *ngIf="hasFatherConfessor()">
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f26_fcParish') }}</label>
+              <input type="text" formControlName="fatherConfessorParish" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+            <div *ngIf="hasFatherConfessor()">
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f27_fcPhone') }}</label>
+              <input type="tel" formControlName="fatherConfessorPhone" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Controls -->
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" (click)="closeModal()" class="px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
+          <button type="submit" [disabled]="userForm.invalid" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-semibold shadow-premium disabled:opacity-50">
+            {{ editUserId() ? 'Update Member Profile' : 'Create Member' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== RESET PASSWORD OVERLAY ==================== -->
+  <div *ngIf="isResetModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+    <div class="w-full max-w-sm bg-white dark:bg-darkBg-100 border border-slate-200 dark:border-white/5 rounded-2xl shadow-2xl p-6 relative">
+      <button (click)="closeResetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+        <span class="material-icons">close</span>
+      </button>
+      
+      <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Reset Password</h2>
+      <p class="text-xs text-slate-400 mb-4">Override password for user: <span class="font-bold text-slate-650 dark:text-slate-350">&#64;{{ resetUsername() }}</span></p>
+
+      <form [formGroup]="resetForm" (submit)="onSubmitReset()" class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">New Password *</label>
+          <input type="password" formControlName="password" placeholder="Min 6 characters" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          <span *ngIf="resetForm.get('password')?.invalid && resetForm.get('password')?.touched" class="text-rose-400 text-[10px] mt-1 block">Min 6 characters required</span>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" (click)="closeResetModal()" class="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
+          <button type="submit" [disabled]="resetForm.invalid" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-semibold shadow-premium">Save Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

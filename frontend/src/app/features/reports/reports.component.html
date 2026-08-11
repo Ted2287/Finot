@@ -1,0 +1,97 @@
+<div class="space-y-6">
+  
+  <!-- Header -->
+  <div>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-sans">System Reports</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-1">Export database registries, user statuses, and activity audit trails.</p>
+  </div>
+
+  <!-- Config & Action Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Controls Card -->
+    <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl p-6 shadow-premium h-fit space-y-5">
+      <h3 class="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-2">Export Options</h3>
+      
+      <!-- Select Report Type -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Select Report</label>
+        <div class="space-y-2.5">
+          <button *ngFor="let rep of reportTypes" 
+                  (click)="selectReport(rep.id)"
+                  [ngClass]="selectedReport() === rep.id ? 'bg-primary-500 text-white shadow-md shadow-primary-500/20' : 'bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800'"
+                  class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-between">
+            <span>{{ rep.name }}</span>
+            <span class="material-icons text-lg">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Export Format Indicator -->
+      <div class="pt-2">
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Export Format</label>
+        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-semibold text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-icons text-emerald-600 text-lg">description</span>
+            <span>Excel Spreadsheet (.xlsx)</span>
+          </div>
+          <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold uppercase">Ready</span>
+        </div>
+      </div>
+
+      <!-- Download Action Button -->
+      <button (click)="downloadReport()" [disabled]="isDownloading()"
+              class="w-full py-3 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-500/50 text-white rounded-xl text-sm font-semibold shadow-premium flex items-center justify-center gap-2 transition-all">
+        <span *ngIf="isDownloading()" class="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        <span class="material-icons text-lg" *ngIf="!isDownloading()">download</span>
+        <span>{{ isDownloading() ? 'Downloading...' : 'Download File' }}</span>
+      </button>
+    </div>
+
+    <!-- Preview Grid Card -->
+    <div class="lg:col-span-2 bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl p-6 shadow-premium flex flex-col min-h-[400px]">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-4 mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Report Preview</h3>
+          <p class="text-xs text-slate-400">Live preview of selected dataset (up to 10 rows)</p>
+        </div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-350">
+          {{ getSelectedReportName() }}
+        </span>
+      </div>
+
+      <!-- Table preview window -->
+      <div class="flex-1 overflow-x-auto">
+        
+        <div *ngIf="isLoading()" class="h-full flex items-center justify-center py-16">
+          <div class="h-8 w-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+        </div>
+        
+        <table *ngIf="!isLoading() && previewData().length > 0" class="w-full text-left text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">
+              <th *ngFor="let col of previewColumns()" class="py-2.5 px-3">{{ col.header }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100/50 dark:divide-slate-800/40 text-slate-600 dark:text-slate-305 text-xs">
+            <tr *ngFor="let row of previewData() | slice:0:10" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+              <td *ngFor="let col of previewColumns()" class="py-2.5 px-3 font-medium">
+                {{ formatValue(row[col.key]) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty preview -->
+        <div *ngIf="previewData().length === 0 && !isLoading()" class="h-full flex flex-col items-center justify-center py-20">
+          <span class="material-icons text-slate-350 dark:text-slate-750 text-5xl">table_chart</span>
+          <h4 class="text-sm font-bold text-slate-600 dark:text-slate-300 mt-2">No preview data</h4>
+          <p class="text-xs text-slate-400 mt-1">Select a report from the list to display details.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

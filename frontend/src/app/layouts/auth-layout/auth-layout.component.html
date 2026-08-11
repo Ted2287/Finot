@@ -1,0 +1,11 @@
+<div class="min-h-screen relative flex flex-col justify-center items-center overflow-x-hidden bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-white transition-colors duration-300 font-sans p-4 sm:p-6 md:p-10">
+  <!-- Animated Background Blobs -->
+  <div class="fixed top-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary-500/10 blur-[140px] pointer-events-none animate-pulse duration-[8000ms]"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full bg-indigo-600/10 blur-[150px] pointer-events-none animate-pulse duration-[10000ms]"></div>
+  <div class="fixed top-[40%] right-[20%] w-[400px] h-[400px] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none"></div>
+  
+  <!-- Content Area -->
+  <div class="relative w-full z-10 flex flex-col items-center justify-center">
+    <router-outlet></router-outlet>
+  </div>
+</div>
