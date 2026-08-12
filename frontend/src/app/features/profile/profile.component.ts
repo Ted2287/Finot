@@ -7,6 +7,7 @@ import { User } from '../../models/user.model';
 import { LanguageService } from '../../services/language.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-profile',
@@ -70,6 +71,21 @@ export class ProfileComponent implements OnInit {
   ngOnInit() {
     const user = this.authService.currentUser();
     this.initForms(user);
+  }
+
+  getInitials(user: User): string {
+    if (!user) return 'U';
+    const first = user.firstName ? user.firstName.charAt(0).toUpperCase() : '';
+    const father = user.fatherName ? user.fatherName.charAt(0).toUpperCase() : (user.lastName ? user.lastName.charAt(0).toUpperCase() : '');
+    return `${first}${father}` || 'U';
+  }
+
+  getProfileImageUrl(): string | null {
+    const user = this.authService.currentUser();
+    if (!user || !user.profilePicture) return null;
+    if (user.profilePicture.startsWith('http')) return user.profilePicture;
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    return `${baseUrl}/${user.profilePicture}`;
   }
 
   initForms(user: User | null) {
