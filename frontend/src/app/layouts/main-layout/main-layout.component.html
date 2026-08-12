@@ -156,27 +156,104 @@
           </span>
         </button>
 
-        <!-- User Menu Avatar and Badge -->
-        <div class="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-          <div class="flex flex-col items-end hidden md:flex">
-            <span class="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
-              {{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}
-            </span>
-            <span class="text-[10px] text-primary-500 font-bold uppercase tracking-wider leading-none">
-              {{ authService.currentUser()?.role }}
-            </span>
-          </div>
+        <!-- User Profile Dropdown Button & Container -->
+        <div class="relative pl-3 border-l border-slate-200 dark:border-slate-800">
+          
+          <!-- Profile Trigger -->
+          <button (click)="toggleUserMenu()" 
+                  class="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all duration-200 focus:outline-none">
+            
+            <div class="flex flex-col items-end hidden md:flex text-right">
+              <span class="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                {{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}
+              </span>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider leading-none mt-0.5"
+                    [ngClass]="authService.isAdmin() ? 'text-primary-500' : 'text-emerald-500'">
+                {{ authService.currentUser()?.role }}
+              </span>
+            </div>
 
-          <!-- Profile Avatar -->
-          <a routerLink="/profile" class="relative group">
-            <div class="h-9 w-9 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shadow-premium group-hover:scale-105 transition-transform duration-200">
-              <img *ngIf="authService.currentUser()?.profilePicture" 
-                   [src]="'http://localhost:5000/' + authService.currentUser()?.profilePicture" 
+            <!-- Profile Avatar -->
+            <div class="h-9 w-9 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shadow-premium shrink-0">
+              <img *ngIf="getProfileImageUrl()" 
+                   [src]="getProfileImageUrl()" 
                    alt="avatar" 
                    class="h-full w-full object-cover">
-              <span *ngIf="!authService.currentUser()?.profilePicture" class="material-icons text-primary-500 text-xl">person</span>
+              <span *ngIf="!getProfileImageUrl()" class="material-icons text-primary-500 text-xl">person</span>
             </div>
-          </a>
+
+            <span class="material-icons text-slate-400 text-sm hidden md:inline-block transition-transform duration-200"
+                  [ngClass]="{'rotate-180': isUserMenuOpen()}">
+              expand_more
+            </span>
+          </button>
+
+          <!-- Dropdown Menu Overlay Backdrop -->
+          <div *ngIf="isUserMenuOpen()" 
+               (click)="closeUserMenu()" 
+               class="fixed inset-0 z-40"></div>
+
+          <!-- Dropdown Card -->
+          <div *ngIf="isUserMenuOpen()" 
+               class="absolute right-0 mt-2 w-64 z-50 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl overflow-hidden animate-fadeIn">
+            
+            <!-- User Header Summary -->
+            <div class="p-4 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-3">
+              <div class="h-10 w-10 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+                <img *ngIf="getProfileImageUrl()" 
+                     [src]="getProfileImageUrl()" 
+                     alt="avatar" 
+                     class="h-full w-full object-cover">
+                <span *ngIf="!getProfileImageUrl()" class="material-icons text-primary-500 text-2xl">person</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  {{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}
+                </h4>
+                <p class="text-xs text-slate-400 truncate">&#64;{{ authService.currentUser()?.username }}</p>
+                <span class="inline-block mt-1 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-md"
+                      [ngClass]="authService.isAdmin() ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'">
+                  {{ authService.currentUser()?.role }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Menu Action Links -->
+            <div class="p-2 space-y-1">
+              <a routerLink="/profile" 
+                 (click)="closeUserMenu()"
+                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors">
+                <span class="material-icons text-lg text-slate-400">account_circle</span>
+                <span>My Profile</span>
+              </a>
+
+              <a routerLink="/settings" 
+                 (click)="closeUserMenu()"
+                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors">
+                <span class="material-icons text-lg text-slate-400">settings</span>
+                <span>Account Settings</span>
+              </a>
+
+              <a *ngIf="authService.isAdmin()" 
+                 routerLink="/dashboard" 
+                 (click)="closeUserMenu()"
+                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors">
+                <span class="material-icons text-lg text-slate-400">dashboard</span>
+                <span>Admin Dashboard</span>
+              </a>
+            </div>
+
+            <!-- Divider & Logout Button -->
+            <div class="p-2 border-t border-slate-100 dark:border-slate-800/80">
+              <button (click)="logout()" 
+                      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors">
+                <span class="material-icons text-lg">logout</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+
+          </div>
+
         </div>
 
       </div>

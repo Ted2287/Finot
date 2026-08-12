@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-main-layout',
@@ -28,6 +29,7 @@ export class MainLayoutComponent {
   
   isSidebarOpen = signal<boolean>(false);
   isCollapsed = signal<boolean>(false);
+  isUserMenuOpen = signal<boolean>(false);
 
   toggleSidebar() {
     this.isSidebarOpen.update(v => !v);
@@ -37,8 +39,25 @@ export class MainLayoutComponent {
     this.isCollapsed.update(v => !v);
   }
 
+  toggleUserMenu() {
+    this.isUserMenuOpen.update(v => !v);
+  }
+
+  closeUserMenu() {
+    this.isUserMenuOpen.set(false);
+  }
+
   logout() {
+    this.closeUserMenu();
     this.authService.logout().subscribe();
+  }
+
+  getProfileImageUrl(): string | null {
+    const user = this.authService.currentUser();
+    if (!user || !user.profilePicture) return null;
+    if (user.profilePicture.startsWith('http')) return user.profilePicture;
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    return `${baseUrl}/${user.profilePicture}`;
   }
 
   getCurrentPage(): string {
