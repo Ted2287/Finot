@@ -1,10 +1,10 @@
 import { Injectable, inject, signal, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError, BehaviorSubject, of } from 'rxjs';
+import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { User, Settings } from '../models/user.model';
 
-import { ThemeService } from './theme.service';
+import { ThemeService, Theme } from './theme.service';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -32,10 +32,10 @@ export class AuthService {
       }
     }
 
-    // Effect to auto-apply theme changes
+    // Effect to auto-apply theme changes from userSettings signal
     effect(() => {
       const settings = this.userSettings();
-      if (settings) {
+      if (settings && settings.theme) {
         this.themeService.setTheme(settings.theme);
       }
     });
@@ -83,7 +83,6 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
-    const token = this.token;
     return this.http.post<any>(`${this.apiUrl}/logout`, {}).pipe(
       catchError(err => of(err)),
       tap(() => {
@@ -116,34 +115,45 @@ export class AuthService {
   fetchSettings(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/settings`).pipe(
       tap(res => {
-        if (res.success) {
+        if (res.success && res.settings) {
           this.userSettings.set(res.settings);
+          if (res.settings.theme) {
+            this.themeService.setTheme(res.settings.theme);
+          }
         }
       })
     );
   }
 
   updateSettings(settingsData: Partial<Settings>): Observable<any> {
+    // Optimistically apply theme immediately
+    if (settingsData.theme) {
+      this.themeService.setTheme(settingsData.theme as Theme);
+      const current = this.userSettings();
+      if (current) {
+        this.userSettings.set({ ...current, theme: settingsData.theme as Theme });
+      }
+    }
+
     return this.http.put<any>(`${this.apiUrl}/settings`, settingsData).pipe(
       tap(res => {
-        if (res.success) {
+        if (res.success && res.settings) {
           this.userSettings.set(res.settings);
+          if (res.settings.theme) {
+            this.themeService.setTheme(res.settings.theme);
+          }
         }
       })
     );
   }
 
   toggleTheme(): void {
-    this.themeService.toggleTheme();
-    const current = this.userSettings();
-    if (current) {
-      const nextTheme = this.themeService.currentTheme();
-      this.updateSettings({ theme: nextTheme }).subscribe();
-    }
+    const nextTheme = this.themeService.currentTheme() === 'light' ? 'dark' : 'light';
+    this.updateSettings({ theme: nextTheme }).subscribe();
   }
 
-  applyTheme(theme: 'light' | 'dark'): void {
-    this.themeService.setTheme(theme);
+  applyTheme(theme: Theme): void {
+    this.updateSettings({ theme }).subscribe();
   }
 
   private handleAuthSuccess(token: string, user: User) {

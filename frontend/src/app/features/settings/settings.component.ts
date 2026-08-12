@@ -44,10 +44,6 @@ export class SettingsComponent implements OnInit {
   }
 
   setTheme(theme: 'light' | 'dark') {
-    // Immediately apply theme visually
-    this.themeService.setTheme(theme);
-
-    // Save preference to backend database
     this.isSaving.set(true);
     this.authService.updateSettings({ theme }).subscribe({
       next: () => this.isSaving.set(false),
