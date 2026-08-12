@@ -46,6 +46,11 @@ export interface User {
   role: UserRole;
   isActive: boolean;
   isDeleted: boolean;
+  pendingUpdates?: {
+    data: any;
+    requestedAt: string | Date;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  } | null;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

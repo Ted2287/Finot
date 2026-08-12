@@ -37,10 +37,17 @@ export class UsersComponent implements OnInit {
   public confirmService = inject(ConfirmDialogService);
 
   users = signal<User[]>([]);
+  pendingUsers = signal<User[]>([]);
+  activeTab = signal<'all' | 'pending'>('all');
+
   totalUsers = signal<number>(0);
   currentPage = signal<number>(1);
   totalPages = signal<number>(1);
   isLoading = signal<boolean>(false);
+
+  // Pending Review Modal State
+  isPendingModalOpen = signal<boolean>(false);
+  selectedPendingUser = signal<User | null>(null);
 
   // Filters State
   search = signal<string>('');
@@ -90,6 +97,7 @@ export class UsersComponent implements OnInit {
 
   ngOnInit() {
     this.fetchUsers();
+    this.fetchPendingUsers();
     this.initUserForm();
     
     this.resetForm = this.fb.group({
@@ -152,6 +160,93 @@ export class UsersComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  fetchPendingUsers() {
+    this.userService.getPendingUpdates().subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.pendingUsers.set(res.pendingUsers);
+        }
+      },
+      error: (err) => console.error('Error fetching pending profile updates:', err)
+    });
+  }
+
+  openPendingReviewModal(user: User) {
+    this.selectedPendingUser.set(user);
+    this.isPendingModalOpen.set(true);
+  }
+
+  closePendingReviewModal() {
+    this.isPendingModalOpen.set(false);
+    this.selectedPendingUser.set(null);
+  }
+
+  async approveUpdate(user: User) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Approve Profile Updates',
+      message: `Are you sure you want to approve profile updates for @${user.username}? The changes will take effect immediately on their live profile.`,
+      confirmText: 'Approve Updates',
+      type: 'info'
+    });
+
+    if (!confirmed) return;
+
+    this.userService.approveProfileUpdate(user._id).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.toastService.success(`Profile update for @${user.username} approved successfully!`);
+          this.closePendingReviewModal();
+          this.fetchPendingUsers();
+          this.fetchUsers();
+        }
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.message || 'Failed to approve profile update.');
+      }
+    });
+  }
+
+  async rejectUpdate(user: User) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Reject Profile Updates',
+      message: `Are you sure you want to reject the requested profile updates for @${user.username}?`,
+      confirmText: 'Reject Updates',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
+
+    this.userService.rejectProfileUpdate(user._id).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.toastService.info(`Profile update request for @${user.username} rejected.`);
+          this.closePendingReviewModal();
+          this.fetchPendingUsers();
+        }
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.message || 'Failed to reject profile update.');
+      }
+    });
+  }
+
+  getPendingFieldKeys(user: User): string[] {
+    if (!user || !user.pendingUpdates || !user.pendingUpdates.data) return [];
+    return Object.keys(user.pendingUpdates.data);
+  }
+
+  getCurrentFieldValue(user: User | null, fieldKey: string): string {
+    if (!user) return 'N/A';
+    const val = (user as any)[fieldKey];
+    return val !== undefined && val !== null && val !== '' ? String(val) : 'N/A (empty)';
+  }
+
+  getProposedFieldValue(user: User | null, fieldKey: string): string {
+    if (!user || !user.pendingUpdates || !user.pendingUpdates.data) return 'N/A';
+    const val = user.pendingUpdates.data[fieldKey];
+    return val !== undefined && val !== null && val !== '' ? String(val) : 'N/A (empty)';
   }
 
   onSearch(e: any) {

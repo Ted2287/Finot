@@ -47,18 +47,47 @@ const updateProfile = async (req, res, next) => {
       updates.fatherConfessorPhone = '';
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: updates },
-      { new: true, runValidators: true }
-    ).select('-password');
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Standard Users: Profile changes go to pending approval state
+    if (user.role === 'USER') {
+      user.pendingUpdates = {
+        data: updates,
+        requestedAt: new Date(),
+        status: 'PENDING'
+      };
+      await user.save();
+      await logActivity(user._id, user.username, 'PROFILE_UPDATE_SUBMITTED', { fields: Object.keys(updates) }, req);
+
+      const userObj = user.toObject();
+      delete userObj.password;
+
+      return res.json({
+        success: true,
+        isPending: true,
+        message: 'Profile update request submitted for Admin approval.',
+        user: userObj
+      });
+    }
+
+    // Admin Users: Direct update
+    Object.assign(user, updates);
+    user.pendingUpdates = null;
+    await user.save();
 
     await logActivity(user._id, user.username, 'PROFILE_CHANGE', { fields: Object.keys(updates) }, req);
 
+    const userObj = user.toObject();
+    delete userObj.password;
+
     res.json({
       success: true,
+      isPending: false,
       message: 'Profile updated successfully',
-      user
+      user: userObj
     });
   } catch (error) {
     next(error);
@@ -78,18 +107,18 @@ const uploadProfilePicture = async (req, res, next) => {
       try {
         fs.unlinkSync(user.profilePicture);
       } catch (err) {
-        console.error('Failed to delete old avatar:', err);
+        console.error('Error deleting old picture:', err);
       }
     }
 
-    user.profilePicture = req.file.path.replace(/\\/g, '/'); // normalize slashes
+    user.profilePicture = req.file.path.replace(/\\/g, '/');
     await user.save();
 
-    await logActivity(user._id, user.username, 'PROFILE_CHANGE', { fields: ['profilePicture'] }, req);
+    await logActivity(user._id, user.username, 'PROFILE_PICTURE_CHANGE', {}, req);
 
     res.json({
       success: true,
-      message: 'Profile picture uploaded successfully',
+      message: 'Profile picture updated',
       profilePicture: user.profilePicture
     });
   } catch (error) {
@@ -97,20 +126,9 @@ const uploadProfilePicture = async (req, res, next) => {
   }
 };
 
-// ==================== ADMIN CONTROLLERS ====================
-
 const createUser = async (req, res, next) => {
   try {
-    const { 
-      username, email, password, firstName, fatherName, grandfatherName, lastName, role,
-      phoneNumber, emergencyContactName, emergencyContactPhone, usesTelegram,
-      dateOfBirth, gender, maritalStatus, spouseName, 
-      educationLevel, graduationInstitution, fieldOfStudy,
-      joinedYear, grewUpInChildrenClass, sundaySchoolGrade, notStudyingReason,
-      serviceSubSection, servedInOtherParish, previousServiceSubSection,
-      hasFatherConfessor, fatherConfessorName, fatherConfessorParish, fatherConfessorPhone,
-      address, occupation, department, bio
-    } = req.body;
+    const { username, email, password, firstName, fatherName, grandfatherName, role, phoneNumber, emergencyContactName, emergencyContactPhone, gender, maritalStatus, hasFatherConfessor } = req.body;
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
@@ -118,33 +136,34 @@ const createUser = async (req, res, next) => {
     }
 
     const user = new User({
-      username, email, password, firstName, fatherName, grandfatherName,
-      lastName: lastName || fatherName, role: role || 'USER',
-      phoneNumber, emergencyContactName, emergencyContactPhone, usesTelegram,
-      dateOfBirth, gender, maritalStatus, spouseName, 
-      educationLevel, graduationInstitution, fieldOfStudy,
-      joinedYear, grewUpInChildrenClass, sundaySchoolGrade, notStudyingReason,
-      serviceSubSection, servedInOtherParish, previousServiceSubSection,
-      hasFatherConfessor, fatherConfessorName, fatherConfessorParish, fatherConfessorPhone,
-      address, occupation, department, bio,
+      username,
+      email,
+      password,
+      firstName,
+      fatherName,
+      grandfatherName,
+      lastName: fatherName,
+      phoneNumber: phoneNumber || '+251900000000',
+      emergencyContactName: emergencyContactName || 'Support',
+      emergencyContactPhone: emergencyContactPhone || '+251900000000',
+      gender: gender || 'Male',
+      maritalStatus: maritalStatus || 'Single',
+      hasFatherConfessor: hasFatherConfessor || 'No',
+      role: role || 'USER',
       isActive: true
     });
 
     await user.save();
 
-    // Create settings
-    await Settings.create({ userId: user._id });
+    const settings = new Settings({ userId: user._id });
+    await settings.save();
 
-    await logActivity(user._id, user.username, 'USER_CREATE', { creator: req.user.username }, req);
+    await logActivity(user._id, user.username, 'USER_CREATE', { admin: req.user.username }, req);
 
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    res.status(201).json({
-      success: true,
-      message: 'User created successfully',
-      user: userResponse
-    });
+    res.status(201).json({ success: true, message: 'User created successfully', user: userResponse });
   } catch (error) {
     next(error);
   }
@@ -152,52 +171,43 @@ const createUser = async (req, res, next) => {
 
 const getUsers = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 10, search = '', role, isActive, serviceSubSection } = req.query;
 
-    const search = req.query.search || '';
-    const role = req.query.role || '';
-    const isActive = req.query.isActive;
+    const query = { isDeleted: false };
 
-    // Build filter
-    const filter = { isDeleted: false };
-    
     if (search) {
-      filter.$or = [
-        { username: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
+      query.$or = [
         { firstName: { $regex: search, $options: 'i' } },
         { fatherName: { $regex: search, $options: 'i' } },
         { grandfatherName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { phoneNumber: { $regex: search, $options: 'i' } },
-        { graduationInstitution: { $regex: search, $options: 'i' } },
-        { fieldOfStudy: { $regex: search, $options: 'i' } }
+        { email: { $regex: search, $options: 'i' } },
+        { username: { $regex: search, $options: 'i' } },
+        { phoneNumber: { $regex: search, $options: 'i' } }
       ];
     }
 
-    if (role) {
-      filter.role = role;
-    }
+    if (role) query.role = role;
+    if (isActive !== undefined) query.isActive = isActive === 'true';
+    if (serviceSubSection) query.serviceSubSection = serviceSubSection;
 
-    if (isActive !== undefined && isActive !== '') {
-      filter.isActive = isActive === 'true';
-    }
+    const skip = (page - 1) * limit;
 
-    const total = await User.countDocuments(filter);
-    const users = await User.find(filter)
+    const users = await User.find(query)
       .select('-password')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(parseInt(limit));
+
+    const total = await User.countDocuments(query);
 
     res.json({
       success: true,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      users
+      users,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / limit)
+      }
     });
   } catch (error) {
     next(error);
@@ -218,44 +228,35 @@ const getUserById = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    const fields = [
-      'firstName', 'fatherName', 'grandfatherName', 'lastName', 'role',
-      'phoneNumber', 'emergencyContactName', 'emergencyContactPhone', 'usesTelegram',
-      'dateOfBirth', 'gender', 'maritalStatus', 'spouseName', 
-      'educationLevel', 'graduationInstitution', 'fieldOfStudy',
-      'joinedYear', 'grewUpInChildrenClass', 'sundaySchoolGrade', 'notStudyingReason',
-      'serviceSubSection', 'servedInOtherParish', 'previousServiceSubSection',
-      'hasFatherConfessor', 'fatherConfessorName', 'fatherConfessorParish', 'fatherConfessorPhone',
-      'address', 'occupation', 'department', 'bio'
+    const allowed = [
+      'firstName', 'fatherName', 'grandfatherName', 'lastName',
+      'email', 'role', 'isActive', 'phoneNumber', 'emergencyContactName',
+      'emergencyContactPhone', 'usesTelegram', 'dateOfBirth', 'gender',
+      'maritalStatus', 'spouseName', 'educationLevel', 'graduationInstitution',
+      'fieldOfStudy', 'joinedYear', 'grewUpInChildrenClass', 'sundaySchoolGrade',
+      'notStudyingReason', 'serviceSubSection', 'servedInOtherParish',
+      'previousServiceSubSection', 'hasFatherConfessor', 'fatherConfessorName',
+      'fatherConfessorParish', 'fatherConfessorPhone', 'address'
     ];
 
-    const user = await User.findOne({ _id: req.params.id, isDeleted: false });
+    const updates = {};
+    allowed.forEach(field => {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    });
+
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.id, isDeleted: false },
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select('-password');
+
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    fields.forEach(f => {
-      if (req.body[f] !== undefined) {
-        user[f] = req.body[f];
-      }
-    });
+    await logActivity(user._id, user.username, 'USER_UPDATE', { admin: req.user.username }, req);
 
-    if (user.maritalStatus !== 'Married' && user.maritalStatus !== 'ያገባ') {
-      user.spouseName = '';
-    }
-
-    await user.save();
-
-    await logActivity(user._id, user.username, 'USER_UPDATE', { updater: req.user.username }, req);
-
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
-    res.json({
-      success: true,
-      message: 'User updated successfully',
-      user: userResponse
-    });
+    res.json({ success: true, message: 'User updated successfully', user });
   } catch (error) {
     next(error);
   }
@@ -263,22 +264,17 @@ const updateUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user || user.isDeleted) {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.id, isDeleted: false },
+      { $set: { isDeleted: true, deletedAt: new Date(), isActive: false } },
+      { new: true }
+    );
+
+    if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Prevent deleting self
-    if (user._id.toString() === req.user.id) {
-      return res.status(400).json({ success: false, message: 'Admins cannot delete their own account.' });
-    }
-
-    user.isDeleted = true;
-    user.isActive = false; // deactivate too
-    user.deletedAt = new Date();
-    await user.save();
-
-    await logActivity(user._id, user.username, 'USER_DELETE', { deleter: req.user.username }, req);
+    await logActivity(user._id, user.username, 'USER_DELETE', { admin: req.user.username }, req);
 
     res.json({ success: true, message: 'User soft-deleted successfully' });
   } catch (error) {
@@ -288,26 +284,20 @@ const deleteUser = async (req, res, next) => {
 
 const toggleActivation = async (req, res, next) => {
   try {
-    const { isActive } = req.body;
     const user = await User.findOne({ _id: req.params.id, isDeleted: false });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (user._id.toString() === req.user.id) {
-      return res.status(400).json({ success: false, message: 'Admins cannot change their own active status.' });
-    }
-
-    user.isActive = isActive;
+    user.isActive = !user.isActive;
     await user.save();
 
-    const action = isActive ? 'ACCOUNT_ACTIVATE' : 'ACCOUNT_DEACTIVATE';
-    await logActivity(user._id, user.username, action, { admin: req.user.username }, req);
+    await logActivity(user._id, user.username, 'USER_STATUS_TOGGLE', { isActive: user.isActive }, req);
 
     res.json({
       success: true,
-      message: `User account has been ${isActive ? 'activated' : 'deactivated'} successfully`,
-      isActive: user.isActive
+      message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully`,
+      user
     });
   } catch (error) {
     next(error);
@@ -337,6 +327,78 @@ const resetUserPassword = async (req, res, next) => {
   }
 };
 
+// ================= ADMIN PROFILE UPDATE APPROVAL HANDLERS =================
+
+const getPendingUpdates = async (req, res, next) => {
+  try {
+    const pendingUsers = await User.find({
+      isDeleted: false,
+      'pendingUpdates.status': 'PENDING'
+    }).select('-password').sort({ 'pendingUpdates.requestedAt': -1 });
+
+    res.json({
+      success: true,
+      pendingUsers
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const approveProfileUpdate = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id, isDeleted: false });
+    if (!user || !user.pendingUpdates || !user.pendingUpdates.data) {
+      return res.status(400).json({ success: false, message: 'No pending updates found for this user.' });
+    }
+
+    const proposed = user.pendingUpdates.data;
+    Object.assign(user, proposed);
+    user.pendingUpdates = null;
+
+    await user.save();
+
+    await logActivity(user._id, user.username, 'PROFILE_UPDATE_APPROVED', { admin: req.user.username, approvedFields: Object.keys(proposed) }, req);
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({
+      success: true,
+      message: `Profile update for @${user.username} approved successfully!`,
+      user: userResponse
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const rejectProfileUpdate = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    const user = await User.findOne({ _id: req.params.id, isDeleted: false });
+    if (!user || !user.pendingUpdates) {
+      return res.status(400).json({ success: false, message: 'No pending updates found for this user.' });
+    }
+
+    user.pendingUpdates = null;
+    await user.save();
+
+    await logActivity(user._id, user.username, 'PROFILE_UPDATE_REJECTED', { admin: req.user.username, reason }, req);
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({
+      success: true,
+      message: `Profile update request for @${user.username} rejected.`,
+      user: userResponse
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -347,5 +409,8 @@ module.exports = {
   updateUser,
   deleteUser,
   toggleActivation,
-  resetUserPassword
+  resetUserPassword,
+  getPendingUpdates,
+  approveProfileUpdate,
+  rejectProfileUpdate
 };

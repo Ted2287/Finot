@@ -235,7 +235,11 @@ export class ProfileComponent implements OnInit {
           localStorage.setItem('user', JSON.stringify(res.user));
           this.authService.currentUser.set(res.user);
           this.initForms(res.user);
-          this.toastService.success('Profile details updated successfully!');
+          if (res.isPending) {
+            this.toastService.info(res.message || 'Profile update request submitted for Admin approval.');
+          } else {
+            this.toastService.success('Profile details updated successfully!');
+          }
           this.activeTab.set('details');
         }
       },

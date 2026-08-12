@@ -17,8 +17,8 @@ export class UserService {
   }
 
   // Update current user profile details
-  updateProfile(profileData: Partial<User>): Observable<{ success: boolean; user: User; message: string }> {
-    return this.http.put<{ success: boolean; user: User; message: string }>(`${this.apiUrl}/me`, profileData);
+  updateProfile(profileData: Partial<User>): Observable<{ success: boolean; user: User; isPending?: boolean; message: string }> {
+    return this.http.put<{ success: boolean; user: User; isPending?: boolean; message: string }>(`${this.apiUrl}/me`, profileData);
   }
 
   // Upload current user profile photo
@@ -50,6 +50,21 @@ export class UserService {
       this.apiUrl, 
       { params: httpParams }
     );
+  }
+
+  // Get list of pending profile update requests for Admin
+  getPendingUpdates(): Observable<{ success: boolean; pendingUsers: User[] }> {
+    return this.http.get<{ success: boolean; pendingUsers: User[] }>(`${this.apiUrl}/pending-updates`);
+  }
+
+  // Admin approves user profile changes
+  approveProfileUpdate(id: string): Observable<{ success: boolean; user: User; message: string }> {
+    return this.http.post<{ success: boolean; user: User; message: string }>(`${this.apiUrl}/${id}/approve-update`, {});
+  }
+
+  // Admin rejects user profile changes
+  rejectProfileUpdate(id: string, reason?: string): Observable<{ success: boolean; user: User; message: string }> {
+    return this.http.post<{ success: boolean; user: User; message: string }>(`${this.apiUrl}/${id}/reject-update`, { reason });
   }
 
   // Get detailed profile of any user by ID

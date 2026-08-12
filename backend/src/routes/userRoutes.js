@@ -3,7 +3,8 @@ const router = express.Router();
 const {
   getProfile, updateProfile, uploadProfilePicture,
   createUser, getUsers, getUserById, updateUser,
-  deleteUser, toggleActivation, resetUserPassword
+  deleteUser, toggleActivation, resetUserPassword,
+  getPendingUpdates, approveProfileUpdate, rejectProfileUpdate
 } = require('../controllers/userController');
 const { updateProfileValidator } = require('../validators/userValidator');
 const { authenticate, authorize } = require('../middleware/auth');
@@ -13,6 +14,11 @@ const upload = require('../middleware/upload');
 router.get('/me', authenticate, getProfile);
 router.put('/me', authenticate, updateProfileValidator, updateProfile);
 router.post('/me/profile-picture', authenticate, upload.single('profilePicture'), uploadProfilePicture);
+
+// Admin-only Pending Profile Approval routes
+router.get('/pending-updates', authenticate, authorize('ADMIN'), getPendingUpdates);
+router.post('/:id/approve-update', authenticate, authorize('ADMIN'), approveProfileUpdate);
+router.post('/:id/reject-update', authenticate, authorize('ADMIN'), rejectProfileUpdate);
 
 // Admin-only User CRUD routes
 router.post('/', authenticate, authorize('ADMIN'), updateProfileValidator, createUser);

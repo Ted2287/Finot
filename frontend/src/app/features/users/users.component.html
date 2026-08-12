@@ -1,448 +1,583 @@
 <div class="space-y-6 font-sans">
   
-  <!-- Header -->
+  <!-- Header Bar -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
       <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Sunday School Member Directory</h1>
-      <p class="text-slate-500 dark:text-slate-400 mt-1">Manage, audit, activate, and filter member profiles and Sunday school details.</p>
+      <p class="text-slate-500 dark:text-slate-400 mt-1">Manage, audit, activate, and review member profiles and Sunday school details.</p>
     </div>
-    <button (click)="openCreateModal()" class="flex items-center gap-2 px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-sm font-semibold shadow-premium transition-all duration-200">
-      <span class="material-icons text-sm">person_add</span>
-      <span>Add New Member</span>
+    
+    <div class="flex items-center gap-3">
+      <!-- Tab Controls -->
+      <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <button (click)="activeTab.set('all')" 
+                [ngClass]="activeTab() === 'all' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+          <span class="material-icons text-base">people</span>
+          <span>All Members</span>
+        </button>
+
+        <button (click)="activeTab.set('pending')" 
+                [ngClass]="activeTab() === 'pending' ? 'bg-amber-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer relative">
+          <span class="material-icons text-base">hourglass_top</span>
+          <span>Pending Approvals</span>
+          <span *ngIf="pendingUsers().length > 0" 
+                class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold">
+            {{ pendingUsers().length }}
+          </span>
+        </button>
+      </div>
+
+      <button (click)="openCreateModal()" class="flex items-center gap-2 px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-sm font-semibold shadow-premium transition-all duration-200 cursor-pointer">
+        <span class="material-icons text-sm">person_add</span>
+        <span>Add New Member</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PENDING APPROVAL NOTIFICATION BANNER (if pending requests exist) -->
+  <div *ngIf="pendingUsers().length > 0 && activeTab() === 'all'" 
+       class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-4 shadow-sm animate-pulse">
+    <div class="flex items-center gap-3">
+      <span class="material-icons text-amber-500 text-2xl">error_outline</span>
+      <div>
+        <h4 class="text-sm font-bold">Pending Profile Update Requests</h4>
+        <p class="text-xs opacity-90">There are <strong>{{ pendingUsers().length }}</strong> member profile updates awaiting your administrative review.</p>
+      </div>
+    </div>
+    <button (click)="activeTab.set('pending')" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all cursor-pointer shrink-0">
+      Review Requests
     </button>
   </div>
 
-  <!-- Filters & Search Bar Card -->
-  <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl p-4 md:p-6 shadow-premium flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <!-- ================= TAB 1: ALL MEMBERS DIRECTORY ================= -->
+  <ng-container *ngIf="activeTab() === 'all'">
     
-    <!-- Search -->
-    <div class="relative flex-1 max-w-md">
-      <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-        <span class="material-icons text-lg">search</span>
-      </span>
-      <input type="text" (input)="onSearch($event)"
-             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500/50 focus:ring-2 focus:ring-primary-500/10 transition-all"
-             placeholder="Search by name, father name, email, phone...">
-    </div>
-
-    <!-- Filters Group -->
-    <div class="flex flex-wrap items-center gap-3">
-      <!-- Role -->
-      <div>
-        <select (change)="onFilterRole($event)"
-                class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-primary-500/50 transition-all">
-          <option value="">All Roles</option>
-          <option value="ADMIN">Admin</option>
-          <option value="USER">User</option>
-        </select>
-      </div>
-
-      <!-- Status -->
-      <div>
-        <select (change)="onFilterStatus($event)"
-                class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-primary-500/50 transition-all">
-          <option value="">All Statuses</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Main Directory Table Card -->
-  <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl shadow-premium overflow-hidden">
-    
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm border-collapse">
-        <thead>
-          <tr class="border-b border-slate-100 dark:border-slate-800/50 text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">
-            <th class="py-3.5 px-6">Member Name & Contact</th>
-            <th class="py-3.5 px-6">Role</th>
-            <th class="py-3.5 px-6">Sunday School Service</th>
-            <th class="py-3.5 px-6">Father Confessor</th>
-            <th class="py-3.5 px-6">Status</th>
-            <th class="py-3.5 px-6 text-right">Actions</th>
-          </tr>
-        </thead>
-        
-        <tbody class="divide-y divide-slate-100/50 dark:divide-slate-800/40 text-slate-600 dark:text-slate-300">
-          <tr *ngFor="let user of users()" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
-            
-            <!-- Avatar & Identity Info -->
-            <td class="py-4 px-6">
-              <a [routerLink]="['/users', user._id]" class="flex items-center gap-3 group cursor-pointer">
-                <div class="h-10 w-10 rounded-xl bg-primary-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center text-primary-500 flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <img *ngIf="user.profilePicture" [src]="'http://localhost:5000/' + user.profilePicture" alt="avatar" class="h-full w-full object-cover">
-                  <span *ngIf="!user.profilePicture" class="material-icons text-xl">person</span>
-                </div>
-                <div>
-                  <div class="font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary-500 transition-colors">
-                    {{ user.firstName }} {{ user.fatherName }} {{ user.grandfatherName }}
-                  </div>
-                  <div class="text-xs text-slate-400 leading-normal">{{ user.email }} • {{ user.phoneNumber || 'N/A' }}</div>
-                  <div class="text-[10px] text-slate-400 font-mono leading-none">&#64;{{ user.username }}</div>
-                </div>
-              </a>
-            </td>
-
-            <!-- Role badge -->
-            <td class="py-4 px-6">
-              <span [ngClass]="user.role === 'ADMIN' ? 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" 
-                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                {{ user.role }}
-              </span>
-            </td>
-
-            <!-- Sunday School Service fields -->
-            <td class="py-4 px-6 text-xs">
-              <div class="space-y-0.5">
-                <div class="font-semibold text-slate-800 dark:text-slate-200">
-                  {{ user.serviceSubSection || 'No Department' }}
-                </div>
-                <div class="text-slate-400 text-[11px]">Grade: {{ user.sundaySchoolGrade || 'N/A' }} • Joined: {{ user.joinedYear || 'N/A' }}</div>
-              </div>
-            </td>
-
-            <!-- Father Confessor -->
-            <td class="py-4 px-6 text-xs">
-              <div class="space-y-0.5">
-                <div class="font-medium text-slate-800 dark:text-slate-200">
-                  {{ user.fatherConfessorName || 'N/A' }}
-                </div>
-                <div class="text-slate-400 text-[11px] truncate max-w-xs">{{ user.fatherConfessorParish || '' }}</div>
-              </div>
-            </td>
-
-            <!-- Account status toggle display -->
-            <td class="py-4 px-6">
-              <button (click)="toggleActivation(user)" 
-                      [ngClass]="user.isActive ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-500/20'" 
-                      class="px-2.5 py-0.5 rounded-full text-[10px] font-bold hover:scale-105 transition-transform flex items-center gap-1">
-                <span class="h-1.5 w-1.5 rounded-full" [ngClass]="user.isActive ? 'bg-emerald-500' : 'bg-rose-500'"></span>
-                <span>{{ user.isActive ? 'Active' : 'Inactive' }}</span>
-              </button>
-            </td>
-
-            <!-- Action buttons -->
-            <td class="py-4 px-6 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <a [routerLink]="['/users', user._id]" title="View detailed profile"
-                   class="p-1.5 rounded-lg border border-primary-200 dark:border-primary-900/50 hover:bg-primary-50 dark:hover:bg-primary-950/30 text-primary-600 dark:text-primary-400 transition-colors">
-                  <span class="material-icons text-sm">visibility</span>
-                </a>
-                <button (click)="openEditModal(user)" title="Edit profile details"
-                        class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors">
-                  <span class="material-icons text-sm">edit</span>
-                </button>
-                <button (click)="openResetModal(user)" title="Reset user password"
-                        class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors">
-                  <span class="material-icons text-sm">vpn_key</span>
-                </button>
-                <button (click)="deleteUser(user)" title="Delete user"
-                        class="p-1.5 rounded-lg border border-rose-200 dark:border-rose-950 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 transition-colors">
-                  <span class="material-icons text-sm">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Empty state -->
-          <tr *ngIf="users().length === 0 && !isLoading()">
-            <td colspan="6" class="py-16 text-center">
-              <div class="flex flex-col items-center">
-                <span class="material-icons text-slate-300 dark:text-slate-700 text-5xl">people_outline</span>
-                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mt-3">No members found</h3>
-                <p class="text-xs text-slate-400 mt-1">Try widening your filters or search term.</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div class="h-16 flex items-center justify-between px-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-darkBg-100/10">
-      <span class="text-xs text-slate-400">Page {{ currentPage() }} of {{ totalPages() }} ({{ totalUsers() }} total members)</span>
-      <div class="flex items-center gap-2">
-        <button [disabled]="currentPage() === 1" (click)="onPrevPage()"
-                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors">
-          Previous
-        </button>
-        <button [disabled]="currentPage() === totalPages()" (click)="onNextPage()"
-                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors">
-          Next
-        </button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ==================== CREATE / EDIT MODAL OVERLAY ==================== -->
-  <div *ngIf="isModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md">
-    <div class="w-full max-w-4xl bg-white dark:bg-darkBg-100 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl p-6 relative flex flex-col max-h-[90vh]">
+    <!-- Filters & Search Bar Card -->
+    <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl p-4 md:p-6 shadow-premium flex flex-col md:flex-row md:items-center justify-between gap-4">
       
-      <!-- Close Button -->
-      <button (click)="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-        <span class="material-icons">close</span>
-      </button>
-      
-      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4 pr-10">
+      <!-- Search -->
+      <div class="relative flex-1 max-w-md">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+          <span class="material-icons text-lg">search</span>
+        </span>
+        <input type="text" (input)="onSearch($event)"
+               class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500/50 focus:ring-2 focus:ring-primary-500/10 transition-all"
+               placeholder="Search by name, father name, email, phone...">
+      </div>
+
+      <!-- Filters Group -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Role -->
         <div>
-          <h2 class="text-xl font-bold text-slate-900 dark:text-white">
-            {{ editUserId() ? 'Edit Member Profile' : 'Add New Sunday School Member' }}
-          </h2>
-          <p class="text-xs text-slate-400 mt-0.5">Enter details for all 5 sections of Sunday School Member Registration</p>
+          <select (change)="onFilterRole($event)"
+                  class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-primary-500/50 transition-all">
+            <option value="">All Roles</option>
+            <option value="ADMIN">Admin</option>
+            <option value="USER">User</option>
+          </select>
         </div>
 
-        <!-- Language Switcher in Modal -->
-        <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-          <button (click)="langService.setLanguage('am')" 
-                  [ngClass]="langService.currentLang() === 'am' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400'"
-                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all">🇪🇹 አማርኛ</button>
-          <button (click)="langService.setLanguage('en')" 
-                  [ngClass]="langService.currentLang() === 'en' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400'"
-                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all">🇬🇧 EN</button>
+        <!-- Status -->
+        <div>
+          <select (change)="onFilterStatus($event)"
+                  class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-primary-500/50 transition-all">
+            <option value="">All Statuses</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
         </div>
       </div>
 
-      <form [formGroup]="userForm" (submit)="onSubmitForm()" class="space-y-6 overflow-y-auto pr-2 custom-scroll flex-1">
-        
-        <!-- Credentials (For new members) -->
-        <div *ngIf="!editUserId()" class="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-3">
-          <h3 class="text-xs font-bold uppercase text-primary-500">Credentials (የመለያ መረጃዎች)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Email *</label>
-              <input type="email" formControlName="email" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Username *</label>
-              <input type="text" formControlName="username" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Password *</label>
-              <input type="password" formControlName="password" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-          </div>
-        </div>
+    </div>
 
-        <!-- Section 1: Personal Info -->
-        <div class="space-y-3">
-          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">1. {{ langService.t('sec1Title') }}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f2_firstName') }} *</label>
-              <input type="text" formControlName="firstName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f3_fatherName') }} *</label>
-              <input type="text" formControlName="fatherName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f4_grandfatherName') }} *</label>
-              <input type="text" formControlName="grandfatherName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f5_gender') }} *</label>
-              <select formControlName="gender" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="">Select</option>
-                <option value="Male">ወንድ (Male)</option>
-                <option value="Female">ሴት (Female)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f8_maritalStatus') }} *</label>
-              <select formControlName="maritalStatus" (change)="onModalMaritalStatusChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="">Select</option>
-                <option value="Single">ያላገባ (Single)</option>
-                <option value="Married">ያገባ (Married)</option>
-              </select>
-            </div>
-            <div *ngIf="isModalMarried()">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f9_spouseName') }} *</label>
-              <input type="text" formControlName="spouseName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-          </div>
-        </div>
+    <!-- Users Table Card -->
+    <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl overflow-hidden shadow-premium">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/20 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <th class="py-4 px-6">Member Profile</th>
+              <th class="py-4 px-6">Contact & Emergency</th>
+              <th class="py-4 px-6">Sunday School Dept</th>
+              <th class="py-4 px-6">Father Confessor</th>
+              <th class="py-4 px-6">Role</th>
+              <th class="py-4 px-6">Status</th>
+              <th class="py-4 px-6 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
+            
+            <tr *ngIf="isLoading()">
+              <td colspan="7" class="py-12 text-center text-slate-400">
+                <div class="inline-flex items-center gap-2">
+                  <span class="h-4 w-4 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></span>
+                  <span>Loading members data...</span>
+                </div>
+              </td>
+            </tr>
 
-        <!-- Section 2: Contact Info -->
-        <div class="space-y-3">
-          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">2. {{ langService.t('sec2Title') }}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f10_phone') }} *</label>
-              <input type="tel" formControlName="phoneNumber" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f11_emergencyName') }} *</label>
-              <input type="text" formControlName="emergencyContactName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f12_emergencyPhone') }} *</label>
-              <input type="tel" formControlName="emergencyContactPhone" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f13_telegram') }}</label>
-              <select formControlName="usesTelegram" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="Yes">አዎ (Yes)</option>
-                <option value="No">አይ (No)</option>
-              </select>
-            </div>
-          </div>
-        </div>
+            <tr *ngIf="!isLoading() && users().length === 0">
+              <td colspan="7" class="py-12 text-center text-slate-400">
+                No Sunday School members found matching criteria.
+              </td>
+            </tr>
 
-        <!-- Section 3: Educational Background -->
-        <div class="space-y-3">
-          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">3. {{ langService.t('sec3Title') }}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f14_eduLevel') }}</label>
-              <select formControlName="educationLevel" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="">Select</option>
-                <option value="Grade 8-10">Grade 8-10</option>
-                <option value="High School">High School</option>
-                <option value="Diploma">Diploma</option>
-                <option value="Degree">Degree</option>
-                <option value="Masters">Masters</option>
-                <option value="PhD">PhD</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f15_institution') }}</label>
-              <input type="text" formControlName="graduationInstitution" list="admin-uni-list" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-              <datalist id="admin-uni-list">
-                <option *ngFor="let uni of universities" [value]="uni"></option>
-              </datalist>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f16_fieldOfStudy') }}</label>
-              <input type="text" formControlName="fieldOfStudy" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-          </div>
-        </div>
+            <tr *ngFor="let u of users()" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
+              
+              <!-- Member Info -->
+              <td class="py-4 px-6">
+                <div class="flex items-center gap-3">
+                  <a [routerLink]="['/users', u._id]" class="relative shrink-0 group">
+                    <div class="h-10 w-10 rounded-xl bg-primary-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden font-bold text-primary-500 group-hover:scale-105 transition-transform duration-200">
+                      <img *ngIf="u.profilePicture" [src]="u.profilePicture" class="h-full w-full object-cover">
+                      <span *ngIf="!u.profilePicture" class="text-base">{{ u.firstName.charAt(0) }}{{ u.fatherName.charAt(0) }}</span>
+                    </div>
+                  </a>
+                  <div>
+                    <a [routerLink]="['/users', u._id]" class="font-bold text-slate-900 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 transition-colors block">
+                      {{ u.firstName }} {{ u.fatherName }} {{ u.grandfatherName }}
+                    </a>
+                    <span class="text-xs text-slate-400">&#64;{{ u.username }}</span>
+                  </div>
+                </div>
+              </td>
 
-        <!-- Section 4: Sunday School Details -->
-        <div class="space-y-3">
-          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">4. {{ langService.t('sec4Title') }}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f17_joinedYear') }}</label>
-              <input type="text" formControlName="joinedYear" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f18_grewUp') }}</label>
-              <select formControlName="grewUpInChildrenClass" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="Yes">አዎ (Yes)</option>
-                <option value="No">አይ (No)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f19_ssGrade') }}</label>
-              <select formControlName="sundaySchoolGrade" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="">Select</option>
-                <option value="9">Grade 9</option>
-                <option value="10">Grade 10</option>
-                <option value="11">Grade 11</option>
-                <option value="12">Grade 12</option>
-                <option value="Not Studying">እየተማርኩ አይደለም</option>
-              </select>
-            </div>
-            <div *ngIf="isNotStudying()" class="sm:col-span-3">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f20_whyNotStudying') }}</label>
-              <textarea formControlName="notStudyingReason" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500"></textarea>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f21_subSection') }}</label>
-              <select formControlName="serviceSubSection" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="">Select</option>
-                <option value="Education Dept">ትምህርት ክፍል</option>
-                <option value="Children Dept">ህፃናት</option>
-                <option value="Office">ጽ/ቤት</option>
-                <option value="Development Dept">ልማት ክፍል</option>
-                <option value="Purchasing Dept">ግዥ ክፍል</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f22_servedOtherParish') }}</label>
-              <select formControlName="servedInOtherParish" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="No">አይ (No)</option>
-                <option value="Yes">አዎ (Yes)</option>
-              </select>
-            </div>
-            <div *ngIf="hasServedOtherParish()" class="sm:col-span-3">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f23_prevSubSection') }}</label>
-              <input type="text" formControlName="previousServiceSubSection" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">System Role Permission *</label>
-              <select formControlName="role" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="USER">User (Standard Member)</option>
-                <option value="ADMIN">Admin (System Administrator)</option>
-              </select>
-            </div>
-          </div>
-        </div>
+              <!-- Contact -->
+              <td class="py-4 px-6">
+                <div class="space-y-0.5 text-xs">
+                  <div class="font-medium text-slate-800 dark:text-slate-200">{{ u.email }}</div>
+                  <div class="text-slate-400">{{ u.phoneNumber }}</div>
+                </div>
+              </td>
 
-        <!-- Section 5: Father Confessor -->
-        <div class="space-y-3">
-          <h3 class="text-xs font-bold uppercase text-primary-500 border-b border-slate-100 dark:border-slate-800 pb-1">5. {{ langService.t('sec5Title') }}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f24_hasFatherConfessor') }} *</label>
-              <select formControlName="hasFatherConfessor" (change)="onFatherConfessorChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBg-100 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-                <option value="">Select</option>
-                <option value="Yes">አዎ አለኝ (Yes)</option>
-                <option value="No">አይ የለኝም (No)</option>
-              </select>
-            </div>
-            <div *ngIf="hasFatherConfessor()">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f25_fcName') }} *</label>
-              <input type="text" formControlName="fatherConfessorName" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div *ngIf="hasFatherConfessor()">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f26_fcParish') }}</label>
-              <input type="text" formControlName="fatherConfessorParish" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-            <div *ngIf="hasFatherConfessor()">
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ langService.t('f27_fcPhone') }}</label>
-              <input type="tel" formControlName="fatherConfessorPhone" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-xs focus:outline-none focus:border-primary-500">
-            </div>
-          </div>
-        </div>
+              <!-- Dept -->
+              <td class="py-4 px-6">
+                <span *ngIf="u.serviceSubSection" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                  {{ u.serviceSubSection }}
+                </span>
+                <span *ngIf="!u.serviceSubSection" class="text-slate-400 text-xs">-</span>
+              </td>
 
-        <!-- Submit Controls -->
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <button type="button" (click)="closeModal()" class="px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
-          <button type="submit" [disabled]="userForm.invalid" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-semibold shadow-premium disabled:opacity-50">
-            {{ editUserId() ? 'Update Member Profile' : 'Create Member' }}
+              <!-- Father Confessor -->
+              <td class="py-4 px-6 text-xs">
+                <span *ngIf="u.fatherConfessorName" class="font-medium text-slate-800 dark:text-slate-200 block">
+                  {{ u.fatherConfessorName }}
+                </span>
+                <span *ngIf="u.fatherConfessorParish" class="text-slate-400 block text-[11px]">
+                  ({{ u.fatherConfessorParish }})
+                </span>
+                <span *ngIf="!u.fatherConfessorName" class="text-slate-400">-</span>
+              </td>
+
+              <!-- Role -->
+              <td class="py-4 px-6">
+                <span [ngClass]="u.role === 'ADMIN' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold border">
+                  {{ u.role }}
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td class="py-4 px-6">
+                <span [ngClass]="u.isActive ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800'"
+                      class="px-2 py-0.5 rounded-full text-xs font-semibold border inline-flex items-center gap-1.5">
+                  <span class="h-1.5 w-1.5 rounded-full" [ngClass]="u.isActive ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                  {{ u.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="py-4 px-6 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <a [routerLink]="['/users', u._id]" [title]="'View Profile Details'"
+                     class="p-1.5 rounded-lg text-slate-400 hover:text-primary-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-icons text-lg">visibility</span>
+                  </a>
+
+                  <button (click)="openEditModal(u)" [title]="'Edit Member'"
+                          class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-icons text-lg">edit</span>
+                  </button>
+
+                  <button (click)="openResetModal(u)" [title]="'Reset Password'"
+                          class="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-icons text-lg">key</span>
+                  </button>
+
+                  <button (click)="toggleActivation(u)" [title]="u.isActive ? 'Deactivate Account' : 'Activate Account'"
+                          class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-icons text-lg">{{ u.isActive ? 'block' : 'check_circle' }}</span>
+                  </button>
+
+                  <button (click)="deleteUser(u)" [title]="'Delete Member'"
+                          class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-icons text-lg">delete</span>
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+        <div>Showing page {{ currentPage() }} of {{ totalPages() }} ({{ totalUsers() }} members)</div>
+        <div class="flex items-center gap-2">
+          <button (click)="onPrevPage()" [disabled]="currentPage() === 1"
+                  class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            Previous
+          </button>
+          <button (click)="onNextPage()" [disabled]="currentPage() === totalPages()"
+                  class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            Next
           </button>
         </div>
+      </div>
+    </div>
 
+  </ng-container>
+
+  <!-- ================= TAB 2: PENDING APPROVALS LIST ================= -->
+  <ng-container *ngIf="activeTab() === 'pending'">
+    
+    <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl overflow-hidden shadow-premium">
+      <div class="p-6 border-b border-slate-100 dark:border-slate-800/80">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Pending Profile Update Requests</h3>
+        <p class="text-xs text-slate-400 mt-1">Review proposed member profile updates before approving or rejecting changes.</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/20 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <th class="py-4 px-6">Member</th>
+              <th class="py-4 px-6">Requested Date</th>
+              <th class="py-4 px-6">Modified Fields</th>
+              <th class="py-4 px-6 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
+            
+            <tr *ngIf="pendingUsers().length === 0">
+              <td colspan="4" class="py-16 text-center text-slate-400">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                  <span class="material-icons text-4xl text-emerald-500">task_alt</span>
+                  <p class="font-semibold text-slate-700 dark:text-slate-300">No pending profile updates!</p>
+                  <p class="text-xs text-slate-400">All member profile updates are currently reviewed and up to date.</p>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngFor="let pu of pendingUsers()" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
+              
+              <!-- Member -->
+              <td class="py-4 px-6">
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden font-bold text-primary-500">
+                    <span>{{ pu.firstName.charAt(0) }}{{ pu.fatherName.charAt(0) }}</span>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-slate-900 dark:text-white">{{ pu.firstName }} {{ pu.fatherName }} {{ pu.grandfatherName }}</h4>
+                    <span class="text-xs text-slate-400">&#64;{{ pu.username }} • {{ pu.email }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Date -->
+              <td class="py-4 px-6 text-xs text-slate-500 font-medium">
+                {{ pu.pendingUpdates?.requestedAt | date:'medium' }}
+              </td>
+
+              <!-- Modified Fields -->
+              <td class="py-4 px-6">
+                <div class="flex flex-wrap gap-1.5 max-w-xs">
+                  <span *ngFor="let key of getPendingFieldKeys(pu)" 
+                        class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-extrabold uppercase">
+                    {{ key }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Actions -->
+              <td class="py-4 px-6 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="openPendingReviewModal(pu)" 
+                          class="px-3.5 py-1.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                    <span class="material-icons text-sm">find_in_page</span>
+                    <span>Review Changes</span>
+                  </button>
+
+                  <button (click)="approveUpdate(pu)" 
+                          class="px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer">
+                    <span class="material-icons text-sm">check</span>
+                    <span>Approve</span>
+                  </button>
+
+                  <button (click)="rejectUpdate(pu)" 
+                          class="px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 hover:bg-rose-500/25 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer">
+                    <span class="material-icons text-sm">close</span>
+                    <span>Reject</span>
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ================= PENDING CHANGES COMPARISON MODAL ================= -->
+  <div *ngIf="isPendingModalOpen() && selectedPendingUser()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-6 max-h-[90vh] flex flex-col">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+            <span class="material-icons text-2xl">rate_review</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Review Profile Update Request</h3>
+            <p class="text-xs text-slate-400">Comparing current profile values with member's proposed changes</p>
+          </div>
+        </div>
+        <button (click)="closePendingReviewModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <!-- Member Summary Banner -->
+      <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-primary-500 shrink-0">
+          <span>{{ selectedPendingUser()?.firstName?.charAt(0) }}{{ selectedPendingUser()?.fatherName?.charAt(0) }}</span>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-slate-900 dark:text-white">
+            {{ selectedPendingUser()?.firstName }} {{ selectedPendingUser()?.fatherName }} {{ selectedPendingUser()?.grandfatherName }}
+          </h4>
+          <p class="text-xs text-slate-400">&#64;{{ selectedPendingUser()?.username }} • {{ selectedPendingUser()?.email }}</p>
+        </div>
+      </div>
+
+      <!-- Side-by-side Field Comparison List -->
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1">
+        <div *ngFor="let fieldKey of getPendingFieldKeys(selectedPendingUser()!)" 
+             class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950/40 space-y-2">
+          
+          <div class="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+            {{ fieldKey }}
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <!-- Current Value -->
+            <div class="p-2.5 rounded-xl bg-rose-500/5 border border-rose-500/20">
+              <span class="text-[10px] font-bold uppercase text-rose-500 block mb-0.5">Current Profile Value</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-200">
+                {{ getCurrentFieldValue(selectedPendingUser(), fieldKey) }}
+              </span>
+            </div>
+
+            <!-- Proposed Value -->
+            <div class="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+              <span class="text-[10px] font-bold uppercase text-emerald-500 block mb-0.5">Proposed New Value</span>
+              <span class="font-bold text-emerald-600 dark:text-emerald-400">
+                {{ getProposedFieldValue(selectedPendingUser(), fieldKey) }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+        <button (click)="closePendingReviewModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+          Cancel
+        </button>
+
+        <button (click)="rejectUpdate(selectedPendingUser()!)" class="px-5 py-2.5 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 hover:bg-rose-500/25 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+          <span class="material-icons text-base">close</span>
+          <span>Reject Changes</span>
+        </button>
+
+        <button (click)="approveUpdate(selectedPendingUser()!)" class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+          <span class="material-icons text-base">check</span>
+          <span>Approve & Apply Updates</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MEMBER MODAL -->
+  <div *ngIf="isModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl space-y-6 max-h-[90vh] flex flex-col">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+            {{ editUserId() ? 'Edit Sunday School Member' : 'Register New Member' }}
+          </h3>
+          <p class="text-xs text-slate-400">Fill in all required fields marked with *</p>
+        </div>
+        <button (click)="closeModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="userForm" (ngSubmit)="onSubmitForm()" class="flex-1 overflow-y-auto space-y-6 pr-2 custom-scroll">
+        <!-- Form Content -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">First Name *</label>
+            <input type="text" formControlName="firstName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Name *</label>
+            <input type="text" formControlName="fatherName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Grandfather Name *</label>
+            <input type="text" formControlName="grandfatherName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div *ngIf="!editUserId()">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Username *</label>
+            <input type="text" formControlName="username" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div *ngIf="!editUserId()">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Password *</label>
+            <input type="password" formControlName="password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email *</label>
+            <input type="email" formControlName="email" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Phone Number *</label>
+            <input type="tel" formControlName="phoneNumber" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Gender *</label>
+            <select formControlName="gender" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Role *</label>
+            <select formControlName="role" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+              <option value="USER">User (Standard Member)</option>
+              <option value="ADMIN">Admin (Administrator)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Marital Status *</label>
+            <select formControlName="maritalStatus" (change)="onModalMaritalStatusChange()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+            </select>
+          </div>
+
+          <div *ngIf="isModalMarried()" class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Spouse Name *</label>
+            <input type="text" formControlName="spouseName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Emergency Contact Name *</label>
+            <input type="text" formControlName="emergencyContactName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Emergency Contact Phone *</label>
+            <input type="tel" formControlName="emergencyContactPhone" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Service Department</label>
+            <select formControlName="serviceSubSection" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+              <option value="">Select</option>
+              <option value="Education Dept">ትምህርት ክፍል</option>
+              <option value="Children Dept">ህፃናት</option>
+              <option value="Office">ጽ/ቤት</option>
+              <option value="Development Dept">ልማት ክፍል</option>
+              <option value="Purchasing Dept">ግዥ ክፍል</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Confessor Status *</label>
+            <select formControlName="hasFatherConfessor" (change)="onFatherConfessorChange()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div *ngIf="hasFatherConfessor()">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Confessor Name *</label>
+            <input type="text" formControlName="fatherConfessorName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+          <div *ngIf="hasFatherConfessor()">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Confessor Parish</label>
+            <input type="text" formControlName="fatherConfessorParish" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          </div>
+
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+          <button type="button" (click)="closeModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            Cancel
+          </button>
+          <button type="submit" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-semibold shadow-premium">
+            {{ editUserId() ? 'Save Member Changes' : 'Register Member' }}
+          </button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- ==================== RESET PASSWORD OVERLAY ==================== -->
-  <div *ngIf="isResetModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-    <div class="w-full max-w-sm bg-white dark:bg-darkBg-100 border border-slate-200 dark:border-white/5 rounded-2xl shadow-2xl p-6 relative">
-      <button (click)="closeResetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-        <span class="material-icons">close</span>
-      </button>
-      
-      <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Reset Password</h2>
-      <p class="text-xs text-slate-400 mb-4">Override password for user: <span class="font-bold text-slate-650 dark:text-slate-350">&#64;{{ resetUsername() }}</span></p>
-
-      <form [formGroup]="resetForm" (submit)="onSubmitReset()" class="space-y-4">
+  <!-- RESET PASSWORD MODAL -->
+  <div *ngIf="isResetModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">New Password *</label>
-          <input type="password" formControlName="password" placeholder="Min 6 characters" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          <span *ngIf="resetForm.get('password')?.invalid && resetForm.get('password')?.touched" class="text-rose-400 text-[10px] mt-1 block">Min 6 characters required</span>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Reset Member Password</h3>
+          <p class="text-xs text-slate-400">Set a new password for &#64;{{ resetUsername() }}</p>
+        </div>
+        <button (click)="closeResetModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="resetForm" (ngSubmit)="onSubmitReset()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">New Password *</label>
+          <input type="password" formControlName="password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+          <span *ngIf="resetForm.get('password')?.invalid && resetForm.get('password')?.touched" class="text-rose-400 text-[10px] mt-1 block">Password must be at least 6 characters long</span>
         </div>
 
-        <div class="flex items-center justify-end gap-3 pt-2">
-          <button type="button" (click)="closeResetModal()" class="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
-          <button type="submit" [disabled]="resetForm.invalid" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-semibold shadow-premium">Save Password</button>
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" (click)="closeResetModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="resetForm.invalid" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-premium">
+            Reset Password
+          </button>
         </div>
       </form>
     </div>

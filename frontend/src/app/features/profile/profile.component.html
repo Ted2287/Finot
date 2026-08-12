@@ -49,6 +49,25 @@
     </div>
   </div>
 
+  <!-- Pending Approval Alert Banner for Standard Users -->
+  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'PENDING'" 
+       class="p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-pulse">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 shrink-0 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+        <span class="material-icons text-2xl">hourglass_top</span>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold tracking-tight">Pending Admin Approval</h4>
+        <p class="text-xs opacity-90">
+          Your profile updates submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt | date:'medium' }}</strong> are currently awaiting review and approval by an Admin.
+        </p>
+      </div>
+    </div>
+    <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold shrink-0">
+      Status: Pending Approval
+    </span>
+  </div>
+
   <!-- HEADER HERO BANNER CARD -->
   <div *ngIf="authService.currentUser()" class="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 p-6 sm:p-8 shadow-xl dark:shadow-2xl">
     <!-- Background decorative glow -->
