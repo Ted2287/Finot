@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-settings',
@@ -16,6 +17,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class SettingsComponent implements OnInit {
   authService = inject(AuthService);
+  themeService = inject(ThemeService);
   private fb = inject(FormBuilder);
 
   settingsForm!: FormGroup;
@@ -37,7 +39,15 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  getCurrentTheme(): 'light' | 'dark' {
+    return this.authService.userSettings()?.theme || this.themeService.currentTheme();
+  }
+
   setTheme(theme: 'light' | 'dark') {
+    // Immediately apply theme visually
+    this.themeService.setTheme(theme);
+
+    // Save preference to backend database
     this.isSaving.set(true);
     this.authService.updateSettings({ theme }).subscribe({
       next: () => this.isSaving.set(false),
