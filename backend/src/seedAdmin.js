@@ -2,13 +2,13 @@ const User = require('./models/User');
 
 const seedAdminUser = async () => {
   try {
-    const adminExists = await User.findOne({ role: 'ADMIN' });
-    if (!adminExists) {
-      console.log('No Admin user found. Creating default Admin account...');
-      const admin = new User({
+    let admin = await User.findOne({ $or: [{ username: 'admin' }, { role: 'ADMIN' }] });
+    if (!admin) {
+      console.log('Creating default Admin account...');
+      admin = new User({
         username: 'admin',
         email: 'admin@finot.org',
-        password: 'Admin123!', // Hashed automatically by pre-save hook
+        password: 'Admin123!',
         firstName: 'System',
         fatherName: 'Admin',
         grandfatherName: 'Finot',
@@ -20,14 +20,19 @@ const seedAdminUser = async () => {
         maritalStatus: 'Single',
         hasFatherConfessor: 'No',
         role: 'ADMIN',
-        isActive: true
+        isActive: true,
+        isDeleted: false
       });
       await admin.save();
-      console.log('✅ Default Admin account created successfully!');
-      console.log('   Username: admin');
-      console.log('   Password: Admin123!');
+      console.log('✅ Default Admin account created successfully! Username: admin | Password: Admin123!');
     } else {
-      console.log(`Admin account already exists: @${adminExists.username}`);
+      // Force reset admin password and active status
+      admin.password = 'Admin123!';
+      admin.role = 'ADMIN';
+      admin.isActive = true;
+      admin.isDeleted = false;
+      await admin.save();
+      console.log('✅ Default Admin account updated & password reset! Username: admin | Password: Admin123!');
     }
   } catch (err) {
     console.error('Error seeding default Admin user:', err.message);
