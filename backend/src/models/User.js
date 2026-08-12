@@ -193,8 +193,6 @@ UserSchema.pre('validate', function(next) {
 });
 
 // Create indexes
-UserSchema.index({ username: 1 });
-UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ isActive: 1 });
 
