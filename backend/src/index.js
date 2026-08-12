@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
 const connectDB = require('./config/db');
+const seedAdminUser = require('./seedAdmin');
 const errorHandler = require('./middleware/errorHandler');
 
 const authRoutes = require('./routes/authRoutes');
@@ -14,8 +15,10 @@ const auditLogRoutes = require('./routes/auditLogRoutes');
 
 const app = express();
 
-// Connect to Database
-connectDB();
+// Connect to Database & Seed Admin
+connectDB().then(() => {
+  seedAdminUser();
+});
 
 // Ensure upload directory exists
 const uploadDir = process.env.UPLOAD_DIR || 'uploads/';
