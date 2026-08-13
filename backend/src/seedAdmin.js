@@ -2,7 +2,13 @@ const User = require('./models/User');
 
 const seedAdminUser = async () => {
   try {
-    let admin = await User.findOne({ $or: [{ username: 'admin' }, { role: 'ADMIN' }] });
+    // Ensure all non-admin usernames are assigned role USER
+    await User.updateMany(
+      { username: { $ne: 'admin' } },
+      { $set: { role: 'USER' } }
+    );
+
+    let admin = await User.findOne({ username: 'admin' });
     if (!admin) {
       console.log('Creating default Admin account...');
       admin = new User({
@@ -26,7 +32,6 @@ const seedAdminUser = async () => {
       await admin.save();
       console.log('✅ Default Admin account created successfully! Username: admin | Password: Admin123!');
     } else {
-      // Force reset admin password and active status
       admin.password = 'Admin123!';
       admin.role = 'ADMIN';
       admin.isActive = true;

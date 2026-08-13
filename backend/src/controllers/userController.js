@@ -52,9 +52,9 @@ const updateProfile = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Standard Users (non-ADMIN): Profile changes MUST NOT be applied immediately.
-    // They are saved as a pending request for Admin review.
-    if (!user.role || user.role.toUpperCase() !== 'ADMIN') {
+    // All self-edits to personal profile via /api/users/me MUST NOT be applied immediately.
+    // They are saved as a pending update request for Admin review.
+    if (user.username !== 'admin') {
       user.pendingUpdates = {
         data: updates,
         requestedAt: new Date(),
