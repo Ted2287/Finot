@@ -35,6 +35,13 @@ export class ReportsComponent implements OnInit {
   previewData = signal<any[]>([]);
   previewColumns = signal<any[]>([]);
 
+  // Pagination State (5 per page)
+  currentPage = signal<number>(1);
+  pageSize = 5;
+
+  // Selection State
+  selectedRowIndexes = signal<Set<number>>(new Set());
+
   ngOnInit() {
     this.fetchPreview();
   }
@@ -45,7 +52,72 @@ export class ReportsComponent implements OnInit {
 
   selectReport(id: string) {
     this.selectedReport.set(id);
+    this.currentPage.set(1);
+    this.clearSelection();
     this.fetchPreview();
+  }
+
+  get paginatedPreviewData(): any[] {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.previewData().slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.previewData().length / this.pageSize));
+  }
+
+  getGlobalIndex(localIdx: number): number {
+    return (this.currentPage() - 1) * this.pageSize + localIdx;
+  }
+
+  onPrevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  onNextPage() {
+    if (this.currentPage() < this.totalPages) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  toggleSelectAll(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    const set = new Set<number>(this.selectedRowIndexes());
+    const start = (this.currentPage() - 1) * this.pageSize;
+    const pageItems = this.paginatedPreviewData;
+    pageItems.forEach((_, idx) => {
+      const globalIdx = start + idx;
+      if (checked) set.add(globalIdx);
+      else set.delete(globalIdx);
+    });
+    this.selectedRowIndexes.set(set);
+  }
+
+  toggleSelectRow(globalIdx: number) {
+    const set = new Set<number>(this.selectedRowIndexes());
+    if (set.has(globalIdx)) {
+      set.delete(globalIdx);
+    } else {
+      set.add(globalIdx);
+    }
+    this.selectedRowIndexes.set(set);
+  }
+
+  isSelected(globalIdx: number): boolean {
+    return this.selectedRowIndexes().has(globalIdx);
+  }
+
+  isAllSelected(): boolean {
+    const pageItems = this.paginatedPreviewData;
+    if (pageItems.length === 0) return false;
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return pageItems.every((_, idx) => this.selectedRowIndexes().has(start + idx));
+  }
+
+  clearSelection() {
+    this.selectedRowIndexes.set(new Set());
   }
 
   fetchPreview() {

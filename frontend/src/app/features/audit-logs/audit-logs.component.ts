@@ -46,11 +46,48 @@ export class AuditLogsComponent implements OnInit {
     this.fetchLogs();
   }
 
+  // Selection State
+  selectedLogIds = signal<Set<string>>(new Set());
+
+  toggleSelectAll(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    const set = new Set<string>(this.selectedLogIds());
+    if (checked) {
+      this.logs().forEach(l => set.add(l._id));
+    } else {
+      this.logs().forEach(l => set.delete(l._id));
+    }
+    this.selectedLogIds.set(set);
+  }
+
+  toggleSelectLog(id: string) {
+    const set = new Set<string>(this.selectedLogIds());
+    if (set.has(id)) {
+      set.delete(id);
+    } else {
+      set.add(id);
+    }
+    this.selectedLogIds.set(set);
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedLogIds().has(id);
+  }
+
+  isAllSelected(): boolean {
+    const currentLogs = this.logs();
+    return currentLogs.length > 0 && currentLogs.every(l => this.selectedLogIds().has(l._id));
+  }
+
+  clearSelection() {
+    this.selectedLogIds.set(new Set());
+  }
+
   fetchLogs() {
     this.isLoading.set(true);
     this.auditLogService.getAuditLogs({
       page: this.currentPage(),
-      limit: 15,
+      limit: 5,
       username: this.usernameFilter,
       action: this.actionFilter,
       startDate: this.startDateFilter,

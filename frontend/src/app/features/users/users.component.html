@@ -94,10 +94,24 @@
 
     <!-- Users Table Card -->
     <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl overflow-hidden shadow-premium">
+      
+      <!-- Selection Bar Indicator -->
+      <div *ngIf="selectedUserIds().size > 0" class="bg-primary-50 dark:bg-primary-950/40 px-6 py-2.5 border-b border-primary-100 dark:border-primary-900/50 flex items-center justify-between text-xs text-primary-700 dark:text-primary-300">
+        <div class="flex items-center gap-2 font-semibold">
+          <span class="material-icons text-base">check_box</span>
+          <span>Selected {{ selectedUserIds().size }} member(s)</span>
+        </div>
+        <button (click)="clearSelection()" class="hover:underline text-[11px] font-bold">Clear selection</button>
+      </div>
+
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/20 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <th class="py-4 px-4 w-10 text-center">
+                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)"
+                       class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500 cursor-pointer">
+              </th>
               <th class="py-4 px-6">Member Profile</th>
               <th class="py-4 px-6">Contact & Emergency</th>
               <th class="py-4 px-6">Sunday School Dept</th>
@@ -110,7 +124,7 @@
           <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
             
             <tr *ngIf="isLoading()">
-              <td colspan="7" class="py-12 text-center text-slate-400">
+              <td colspan="8" class="py-12 text-center text-slate-400">
                 <div class="inline-flex items-center gap-2">
                   <span class="h-4 w-4 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></span>
                   <span>Loading members data...</span>
@@ -119,13 +133,21 @@
             </tr>
 
             <tr *ngIf="!isLoading() && users().length === 0">
-              <td colspan="7" class="py-12 text-center text-slate-400">
+              <td colspan="8" class="py-12 text-center text-slate-400">
                 No Sunday School members found matching criteria.
               </td>
             </tr>
 
-            <tr *ngFor="let u of users()" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
+            <tr *ngFor="let u of users()" 
+                [ngClass]="{'bg-primary-50/40 dark:bg-primary-950/20': isSelected(u._id)}"
+                class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
               
+              <!-- Checkbox -->
+              <td class="py-4 px-4 text-center">
+                <input type="checkbox" [checked]="isSelected(u._id)" (change)="toggleSelectUser(u._id)"
+                       class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500 cursor-pointer">
+              </td>
+
               <!-- Member Info -->
               <td class="py-4 px-6">
                 <div class="flex items-center gap-3">
@@ -225,14 +247,14 @@
 
       <!-- Pagination -->
       <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-        <div>Showing page {{ currentPage() }} of {{ totalPages() }} ({{ totalUsers() }} members)</div>
+        <div>Showing page {{ currentPage() }} of {{ totalPages() }} (5 per page, {{ totalUsers() }} total members)</div>
         <div class="flex items-center gap-2">
           <button (click)="onPrevPage()" [disabled]="currentPage() === 1"
-                  class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
             Previous
           </button>
           <button (click)="onNextPage()" [disabled]="currentPage() === totalPages()"
-                  class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
             Next
           </button>
         </div>

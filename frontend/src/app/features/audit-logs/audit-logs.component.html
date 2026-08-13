@@ -62,10 +62,23 @@
   <!-- Main Audit Logs Table Card -->
   <div class="bg-white dark:bg-darkBg-100 border border-slate-200/50 dark:border-white/5 rounded-2xl shadow-premium overflow-hidden">
     
+    <!-- Selection Bar Indicator -->
+    <div *ngIf="selectedLogIds().size > 0" class="bg-primary-50 dark:bg-primary-950/40 px-6 py-2.5 border-b border-primary-100 dark:border-primary-900/50 flex items-center justify-between text-xs text-primary-700 dark:text-primary-300">
+      <div class="flex items-center gap-2 font-semibold">
+        <span class="material-icons text-base">check_box</span>
+        <span>Selected {{ selectedLogIds().size }} audit log(s)</span>
+      </div>
+      <button (click)="clearSelection()" class="hover:underline text-[11px] font-bold">Clear selection</button>
+    </div>
+
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm border-collapse">
         <thead>
           <tr class="border-b border-slate-100 dark:border-slate-800/50 text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">
+            <th class="py-3.5 px-4 w-10 text-center">
+              <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)"
+                     class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500 cursor-pointer">
+            </th>
             <th class="py-3.5 px-6">Operator</th>
             <th class="py-3.5 px-6">Action</th>
             <th class="py-3.5 px-6">IP Address</th>
@@ -76,7 +89,14 @@
         </thead>
         
         <tbody class="divide-y divide-slate-100/50 dark:divide-slate-800/40 text-slate-600 dark:text-slate-350">
-          <tr *ngFor="let log of logs()" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
+          <tr *ngFor="let log of logs()" 
+              [ngClass]="{'bg-primary-50/40 dark:bg-primary-950/20': isSelected(log._id)}"
+              class="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
+            
+            <td class="py-3.5 px-4 text-center">
+              <input type="checkbox" [checked]="isSelected(log._id)" (change)="toggleSelectLog(log._id)"
+                     class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500 cursor-pointer">
+            </td>
             <td class="py-3.5 px-6 font-semibold text-slate-900 dark:text-white">{{ log.username }}</td>
             <td class="py-3.5 px-6">
               <span [ngClass]="getActionClass(log.action)" class="px-2 py-0.5 rounded-full text-[10px] font-bold">
@@ -94,7 +114,7 @@
           </tr>
 
           <tr *ngIf="logs().length === 0 && !isLoading()">
-            <td colspan="6" class="py-16 text-center">
+            <td colspan="7" class="py-16 text-center">
               <div class="flex flex-col items-center">
                 <span class="material-icons text-slate-300 dark:text-slate-700 text-5xl">history</span>
                 <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mt-3">No logs found</h3>
@@ -108,14 +128,14 @@
 
     <!-- Pagination Controls -->
     <div class="h-16 flex items-center justify-between px-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-darkBg-100/10">
-      <span class="text-xs text-slate-400">Page {{ currentPage() }} of {{ totalPages() }} ({{ totalLogs() }} total events)</span>
+      <span class="text-xs text-slate-400">Page {{ currentPage() }} of {{ totalPages() }} (5 per page, {{ totalLogs() }} total activity logs)</span>
       <div class="flex items-center gap-2">
         <button [disabled]="currentPage() === 1" (click)="onPrevPage()"
-                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors">
+                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors cursor-pointer">
           Previous
         </button>
         <button [disabled]="currentPage() === totalPages()" (click)="onNextPage()"
-                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors">
+                class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-40 transition-colors cursor-pointer">
           Next
         </button>
       </div>

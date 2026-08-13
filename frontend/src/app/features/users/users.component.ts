@@ -139,11 +139,48 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  // Selection State
+  selectedUserIds = signal<Set<string>>(new Set());
+
+  toggleSelectAll(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    const set = new Set<string>(this.selectedUserIds());
+    if (checked) {
+      this.users().forEach(u => set.add(u._id));
+    } else {
+      this.users().forEach(u => set.delete(u._id));
+    }
+    this.selectedUserIds.set(set);
+  }
+
+  toggleSelectUser(id: string) {
+    const set = new Set<string>(this.selectedUserIds());
+    if (set.has(id)) {
+      set.delete(id);
+    } else {
+      set.add(id);
+    }
+    this.selectedUserIds.set(set);
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedUserIds().has(id);
+  }
+
+  isAllSelected(): boolean {
+    const currentUsers = this.users();
+    return currentUsers.length > 0 && currentUsers.every(u => this.selectedUserIds().has(u._id));
+  }
+
+  clearSelection() {
+    this.selectedUserIds.set(new Set());
+  }
+
   fetchUsers() {
     this.isLoading.set(true);
     this.userService.getUsers({
       page: this.currentPage(),
-      limit: 10,
+      limit: 5,
       search: this.search(),
       role: this.role(),
       isActive: this.isActive()
