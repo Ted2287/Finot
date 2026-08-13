@@ -106,17 +106,16 @@ export class AuditLogsComponent implements OnInit {
     return JSON.stringify(details);
   }
 
-  exportLogs(format: 'csv' | 'excel') {
+  exportLogs(format: 'excel' = 'excel') {
     this.auditLogService.exportAuditLogs({
       username: this.usernameFilter,
       action: this.actionFilter,
       startDate: this.startDateFilter,
       endDate: this.endDateFilter,
-      format
+      format: 'excel'
     }).subscribe({
       next: (blob) => {
-        const ext = format === 'excel' ? 'xlsx' : 'csv';
-        this.auditLogService.saveFile(blob, `audit-logs-${Date.now()}.${ext}`);
+        this.auditLogService.saveFile(blob, `audit-logs-${Date.now()}.xlsx`);
       },
       error: (err) => {
         console.error('Export failed:', err);

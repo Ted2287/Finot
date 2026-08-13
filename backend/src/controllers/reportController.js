@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const LoginHistory = require('../models/LoginHistory');
-const { exportToCSV, exportToExcel, exportToPDF } = require('../utils/exporter');
+const { exportToExcel } = require('../utils/exporter');
 
 const getDashboardStats = async (req, res, next) => {
   try {
@@ -224,12 +224,7 @@ const generateReport = async (req, res, reportType, exportFormat) => {
   }
 
   // Handle format exports
-  if (format === 'csv') {
-    const csvContent = exportToCSV(columns, data);
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename=report-${reportType}-${Date.now()}.csv`);
-    return res.status(200).send(csvContent);
-  } else if (format === 'excel') {
+  if (format === 'excel') {
     const excelBuffer = await exportToExcel(columns, data, reportType);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=report-${reportType}-${Date.now()}.xlsx`);

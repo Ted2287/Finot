@@ -35,15 +35,15 @@ export class AuditLogService {
     );
   }
 
-  // Export filtered audit logs as binary CSV or Excel
+  // Export filtered audit logs as Excel
   exportAuditLogs(params: {
     username?: string;
     action?: string;
     startDate?: string;
     endDate?: string;
-    format: 'csv' | 'excel';
+    format?: 'excel';
   }): Observable<Blob> {
-    let httpParams = new HttpParams().set('format', params.format);
+    let httpParams = new HttpParams().set('format', params.format || 'excel');
 
     if (params.username) httpParams = httpParams.set('username', params.username);
     if (params.action) httpParams = httpParams.set('action', params.action);

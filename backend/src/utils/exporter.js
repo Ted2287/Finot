@@ -1,35 +1,6 @@
 const ExcelJS = require('exceljs');
 
 /**
- * Export to CSV (String content with UTF-8 BOM for Excel compatibility)
- * @param {Array} columns - [{ header: 'Header Name', key: 'data_key' }]
- * @param {Array} data - Array of data objects
- */
-const exportToCSV = (columns, data) => {
-  // UTF-8 BOM for proper Excel display of Unicode characters (e.g. Amharic text)
-  const BOM = '\uFEFF';
-  
-  const escapeCell = (val) => {
-    if (val === null || val === undefined) return '""';
-    let str = typeof val === 'object' ? JSON.stringify(val) : String(val);
-    // Escape double quotes by doubling them
-    str = str.replace(/"/g, '""');
-    return `"${str}"`;
-  };
-
-  const headers = columns.map(col => escapeCell(col.header)).join(',');
-  
-  const rows = data.map(item => {
-    return columns.map(col => {
-      const val = item[col.key];
-      return escapeCell(val);
-    }).join(',');
-  });
-
-  return BOM + [headers, ...rows].join('\r\n');
-};
-
-/**
  * Export to Excel (Buffer)
  * @param {Array} columns - [{ header: 'Header Name', key: 'data_key', width: 20 }]
  * @param {Array} data - Array of data objects
@@ -73,6 +44,5 @@ const exportToExcel = async (columns, data, sheetName = 'Report') => {
 };
 
 module.exports = {
-  exportToCSV,
   exportToExcel
 };

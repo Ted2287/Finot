@@ -1,5 +1,5 @@
 const AuditLog = require('../models/AuditLog');
-const { exportToCSV, exportToExcel } = require('../utils/exporter');
+const { exportToExcel } = require('../utils/exporter');
 
 const getAuditLogs = async (req, res, next) => {
   try {
@@ -87,21 +87,10 @@ const exportAuditLogs = async (req, res, next) => {
       };
     });
 
-    const exportFormat = String(format || 'csv').toLowerCase();
-
-    if (exportFormat === 'csv') {
-      const csvContent = exportToCSV(columns, formattedData);
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename=audit-logs-${Date.now()}.csv`);
-      return res.status(200).send(csvContent);
-    } else if (exportFormat === 'excel') {
-      const excelBuffer = await exportToExcel(columns, formattedData, 'Audit Logs');
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=audit-logs-${Date.now()}.xlsx`);
-      return res.status(200).send(excelBuffer);
-    } else {
-      return res.status(400).json({ success: false, message: 'Invalid export format. Choose csv or excel.' });
-    }
+    const excelBuffer = await exportToExcel(columns, formattedData, 'Audit Logs');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=audit-logs-${Date.now()}.xlsx`);
+    return res.status(200).send(excelBuffer);
   } catch (error) {
     next(error);
   }
