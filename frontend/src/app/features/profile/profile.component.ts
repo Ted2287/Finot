@@ -1,12 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
-import { User } from '../../models/user.model';
+import { UserService } from '../../services/user.service';
 import { LanguageService } from '../../services/language.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { User } from '../../models/user.model';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -21,22 +21,21 @@ import { environment } from '../../../environments/environment';
   `]
 })
 export class ProfileComponent implements OnInit {
-  userService = inject(UserService);
-  authService = inject(AuthService);
-  public langService = inject(LanguageService);
-  toastService = inject(ToastService);
-  confirmService = inject(ConfirmDialogService);
+  public authService = inject(AuthService);
+  private userService = inject(UserService);
   private fb = inject(FormBuilder);
+  public langService = inject(LanguageService);
+  public toastService = inject(ToastService);
+  public confirmService = inject(ConfirmDialogService);
 
-  activeTab = signal<string>('details');
-  isSubmitting = signal<boolean>(false);
-  
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
 
-  // Alerts
+  isSubmitting = signal<boolean>(false);
   passwordSuccess = signal<boolean>(false);
   passwordError = signal<string | null>(null);
+
+  activeTab = signal<'details' | 'edit' | 'password'>('details');
 
   universities = [
     'Addis Ababa University',
@@ -71,6 +70,22 @@ export class ProfileComponent implements OnInit {
   ngOnInit() {
     const user = this.authService.currentUser();
     this.initForms(user);
+    this.refreshProfile();
+  }
+
+  refreshProfile() {
+    this.userService.getProfile().subscribe({
+      next: (res) => {
+        if (res.success && res.user) {
+          localStorage.setItem('user', JSON.stringify(res.user));
+          this.authService.currentUser.set(res.user);
+          this.initForms(res.user);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching fresh profile:', err);
+      }
+    });
   }
 
   getInitials(user: User): string {
@@ -89,32 +104,43 @@ export class ProfileComponent implements OnInit {
   }
 
   initForms(user: User | null) {
+    const pendingData = user?.pendingUpdates?.status === 'PENDING' ? user?.pendingUpdates?.data : null;
+    const getValue = (key: string, liveVal: any) => {
+      if (pendingData && pendingData[key] !== undefined && pendingData[key] !== null) {
+        return pendingData[key];
+      }
+      return liveVal;
+    };
+
+    const dobVal = getValue('dateOfBirth', user?.dateOfBirth);
+    const formattedDob = dobVal ? new Date(dobVal).toISOString().substring(0, 10) : '';
+
     this.profileForm = this.fb.group({
-      firstName: [user?.firstName || '', Validators.required],
-      fatherName: [user?.fatherName || user?.lastName || '', Validators.required],
-      grandfatherName: [user?.grandfatherName || '', Validators.required],
-      phoneNumber: [user?.phoneNumber || '', Validators.required],
-      emergencyContactName: [user?.emergencyContactName || '', Validators.required],
-      emergencyContactPhone: [user?.emergencyContactPhone || '', Validators.required],
-      usesTelegram: [user?.usesTelegram || 'Yes'],
-      dateOfBirth: [user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().substring(0, 10) : ''],
-      gender: [user?.gender || '', Validators.required],
-      maritalStatus: [user?.maritalStatus || '', Validators.required],
-      spouseName: [user?.spouseName || ''],
-      educationLevel: [user?.educationLevel || ''],
-      graduationInstitution: [user?.graduationInstitution || ''],
-      fieldOfStudy: [user?.fieldOfStudy || ''],
-      joinedYear: [user?.joinedYear || ''],
-      grewUpInChildrenClass: [user?.grewUpInChildrenClass || 'No'],
-      sundaySchoolGrade: [user?.sundaySchoolGrade || ''],
-      notStudyingReason: [user?.notStudyingReason || ''],
-      serviceSubSection: [user?.serviceSubSection || ''],
-      servedInOtherParish: [user?.servedInOtherParish || 'No'],
-      previousServiceSubSection: [user?.previousServiceSubSection || ''],
-      hasFatherConfessor: [user?.hasFatherConfessor || '', Validators.required],
-      fatherConfessorName: [user?.fatherConfessorName || ''],
-      fatherConfessorParish: [user?.fatherConfessorParish || ''],
-      fatherConfessorPhone: [user?.fatherConfessorPhone || ''],
+      firstName: [getValue('firstName', user?.firstName || ''), Validators.required],
+      fatherName: [getValue('fatherName', user?.fatherName || user?.lastName || ''), Validators.required],
+      grandfatherName: [getValue('grandfatherName', user?.grandfatherName || ''), Validators.required],
+      phoneNumber: [getValue('phoneNumber', user?.phoneNumber || ''), Validators.required],
+      emergencyContactName: [getValue('emergencyContactName', user?.emergencyContactName || ''), Validators.required],
+      emergencyContactPhone: [getValue('emergencyContactPhone', user?.emergencyContactPhone || ''), Validators.required],
+      usesTelegram: [getValue('usesTelegram', user?.usesTelegram || 'Yes')],
+      dateOfBirth: [formattedDob],
+      gender: [getValue('gender', user?.gender || ''), Validators.required],
+      maritalStatus: [getValue('maritalStatus', user?.maritalStatus || ''), Validators.required],
+      spouseName: [getValue('spouseName', user?.spouseName || '')],
+      educationLevel: [getValue('educationLevel', user?.educationLevel || '')],
+      graduationInstitution: [getValue('graduationInstitution', user?.graduationInstitution || '')],
+      fieldOfStudy: [getValue('fieldOfStudy', user?.fieldOfStudy || '')],
+      joinedYear: [getValue('joinedYear', user?.joinedYear || '')],
+      grewUpInChildrenClass: [getValue('grewUpInChildrenClass', user?.grewUpInChildrenClass || 'No')],
+      sundaySchoolGrade: [getValue('sundaySchoolGrade', user?.sundaySchoolGrade || '')],
+      notStudyingReason: [getValue('notStudyingReason', user?.notStudyingReason || '')],
+      serviceSubSection: [getValue('serviceSubSection', user?.serviceSubSection || '')],
+      servedInOtherParish: [getValue('servedInOtherParish', user?.servedInOtherParish || 'No')],
+      previousServiceSubSection: [getValue('previousServiceSubSection', user?.previousServiceSubSection || '')],
+      hasFatherConfessor: [getValue('hasFatherConfessor', user?.hasFatherConfessor || ''), Validators.required],
+      fatherConfessorName: [getValue('fatherConfessorName', user?.fatherConfessorName || '')],
+      fatherConfessorParish: [getValue('fatherConfessorParish', user?.fatherConfessorParish || '')],
+      fatherConfessorPhone: [getValue('fatherConfessorPhone', user?.fatherConfessorPhone || '')],
       address: this.fb.group({
         street: [user?.address?.street || ''],
         city: [user?.address?.city || ''],
@@ -122,9 +148,9 @@ export class ProfileComponent implements OnInit {
         zipCode: [user?.address?.zipCode || ''],
         country: [user?.address?.country || '']
       }),
-      occupation: [user?.occupation || ''],
-      department: [user?.department || ''],
-      bio: [user?.bio || '']
+      occupation: [getValue('occupation', user?.occupation || '')],
+      department: [getValue('department', user?.department || '')],
+      bio: [getValue('bio', user?.bio || '')]
     });
 
     this.onProfileMaritalStatusChange();
@@ -183,23 +209,18 @@ export class ProfileComponent implements OnInit {
     fcName?.updateValueAndValidity();
   }
 
-  onFileSelected(e: any) {
-    const file = e.target.files[0];
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
     if (file) {
       this.userService.uploadProfilePicture(file).subscribe({
         next: (res) => {
           if (res.success) {
-            const current = this.authService.currentUser();
-            if (current) {
-              const updated = { ...current, profilePicture: res.profilePicture };
-              localStorage.setItem('user', JSON.stringify(updated));
-              this.authService.currentUser.set(updated);
-            }
-            this.toastService.success('Profile picture updated successfully!');
+            this.toastService.success('Profile picture updated!');
+            this.refreshProfile();
           }
         },
         error: (err) => {
-          this.toastService.error(err.error?.message || 'Failed to upload image.');
+          this.toastService.error(err.error?.message || 'Failed to upload photo.');
         }
       });
     }
@@ -213,9 +234,9 @@ export class ProfileComponent implements OnInit {
     }
 
     const confirmed = await this.confirmService.confirm({
-      title: 'Save Profile Changes',
-      message: 'Are you sure you want to update your profile information?',
-      confirmText: 'Save Profile',
+      title: 'Submit Profile Changes',
+      message: 'Are you sure you want to submit these profile changes for Admin approval?',
+      confirmText: 'Submit for Approval',
       type: 'warning'
     });
 
@@ -236,7 +257,7 @@ export class ProfileComponent implements OnInit {
           this.authService.currentUser.set(res.user);
           this.initForms(res.user);
           if (res.isPending) {
-            this.toastService.info(res.message || 'Profile update request submitted for Admin approval.');
+            this.toastService.info(res.message || 'Your update has been submitted and is pending admin approval.');
           } else {
             this.toastService.success('Profile details updated successfully!');
           }
@@ -282,6 +303,7 @@ export class ProfileComponent implements OnInit {
         if (res.success) {
           localStorage.setItem('user', JSON.stringify(res.user));
           this.authService.currentUser.set(res.user);
+          this.initForms(res.user);
         }
       }
     });
