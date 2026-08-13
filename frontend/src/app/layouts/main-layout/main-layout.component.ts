@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { LanguageService } from '../../services/language.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -25,6 +26,7 @@ import { environment } from '../../../environments/environment';
 })
 export class MainLayoutComponent {
   authService = inject(AuthService);
+  langService = inject(LanguageService);
   router = inject(Router);
   
   isSidebarOpen = signal<boolean>(false);

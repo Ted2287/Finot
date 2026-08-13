@@ -18,11 +18,15 @@
       
       <div class="flex items-center gap-3 overflow-hidden">
         <div class="h-9 w-9 shrink-0 rounded-xl bg-primary-500 flex items-center justify-center shadow-md shadow-primary-500/20">
-          <span class="material-icons text-white text-xl">bubble_chart</span>
+          <span class="material-icons text-white text-xl">church</span>
         </div>
         <div *ngIf="!isCollapsed()" class="whitespace-nowrap transition-opacity duration-200">
-          <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-sans leading-none">Finot</h2>
-          <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold mt-0.5">Console</p>
+          <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-sans leading-none">
+            {{ langService.currentLang() === 'am' ? 'ፍኖት' : 'Finot' }}
+          </h2>
+          <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold mt-0.5">
+            {{ langService.currentLang() === 'am' ? 'ሲስተም' : 'Console' }}
+          </p>
         </div>
       </div>
 
