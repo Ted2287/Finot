@@ -52,44 +52,25 @@ const updateProfile = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // All self-edits to personal profile via /api/users/me MUST NOT be applied immediately.
-    // They are saved as a pending update request for Admin review.
-    if (user.username !== 'admin') {
-      user.pendingUpdates = {
-        data: updates,
-        requestedAt: new Date(),
-        resolvedAt: null,
-        status: 'PENDING',
-        rejectReason: ''
-      };
-      await user.save();
-      await logActivity(user._id, user.username, 'PROFILE_UPDATE_SUBMITTED', { fields: Object.keys(updates) }, req);
-
-      const userObj = user.toObject();
-      delete userObj.password;
-
-      return res.json({
-        success: true,
-        isPending: true,
-        message: 'Your update has been submitted and is pending admin approval.',
-        user: userObj
-      });
-    }
-
-    // Admin Users: Direct update
-    Object.assign(user, updates);
-    user.pendingUpdates = null;
+    // ALL profile update requests MUST NOT be applied immediately to live user record.
+    // They are recorded into pendingUpdates and sent to Pending Approvals page for Admin review.
+    user.pendingUpdates = {
+      data: updates,
+      requestedAt: new Date(),
+      resolvedAt: null,
+      status: 'PENDING',
+      rejectReason: ''
+    };
     await user.save();
-
-    await logActivity(user._id, user.username, 'PROFILE_CHANGE', { fields: Object.keys(updates) }, req);
+    await logActivity(user._id, user.username, 'PROFILE_UPDATE_SUBMITTED', { fields: Object.keys(updates) }, req);
 
     const userObj = user.toObject();
     delete userObj.password;
 
-    res.json({
+    return res.json({
       success: true,
-      isPending: false,
-      message: 'Profile updated successfully',
+      isPending: true,
+      message: 'Your update has been submitted and is pending admin approval.',
       user: userObj
     });
   } catch (error) {
@@ -247,19 +228,32 @@ const updateUser = async (req, res, next) => {
       if (req.body[field] !== undefined) updates[field] = req.body[field];
     });
 
-    const user = await User.findOneAndUpdate(
-      { _id: req.params.id, isDeleted: false },
-      { $set: updates, pendingUpdates: null },
-      { new: true, runValidators: true }
-    ).select('-password');
-
+    const user = await User.findOne({ _id: req.params.id, isDeleted: false });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    await logActivity(user._id, user.username, 'USER_UPDATE', { admin: req.user.username }, req);
+    // User updates submitted from Users page also go to pending approval
+    user.pendingUpdates = {
+      data: updates,
+      requestedAt: new Date(),
+      resolvedAt: null,
+      status: 'PENDING',
+      rejectReason: ''
+    };
+    await user.save();
 
-    res.json({ success: true, message: 'User updated successfully', user });
+    await logActivity(user._id, user.username, 'USER_UPDATE_SUBMITTED', { admin: req.user.username, fields: Object.keys(updates) }, req);
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.json({
+      success: true,
+      isPending: true,
+      message: 'User update submitted and pending approval on Pending Approvals page.',
+      user: userObj
+    });
   } catch (error) {
     next(error);
   }

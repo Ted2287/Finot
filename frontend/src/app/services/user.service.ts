@@ -83,8 +83,8 @@ export class UserService {
   }
 
   // Update user profile by Admin
-  updateUser(id: string, userData: Partial<User>): Observable<{ success: boolean; user: User; message: string }> {
-    return this.http.put<{ success: boolean; user: User; message: string }>(`${this.apiUrl}/${id}`, userData);
+  updateUser(id: string, userData: Partial<User>): Observable<{ success: boolean; user: User; isPending?: boolean; message: string }> {
+    return this.http.put<{ success: boolean; user: User; isPending?: boolean; message: string }>(`${this.apiUrl}/${id}`, userData);
   }
 
   // Toggle status of user account (Active vs Inactive)

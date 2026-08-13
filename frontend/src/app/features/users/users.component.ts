@@ -456,8 +456,13 @@ export class UsersComponent implements OnInit {
       this.userService.updateUser(userId, payload).subscribe({
         next: (res) => {
           if (res.success) {
-            this.toastService.success('Member updated successfully!');
+            if (res.isPending) {
+              this.toastService.info('User update request submitted and pending approval on Pending Approvals page.');
+            } else {
+              this.toastService.success('Member updated successfully!');
+            }
             this.closeModal();
+            this.fetchPendingUsers();
             this.fetchUsers();
           }
         },
