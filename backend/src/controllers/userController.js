@@ -52,12 +52,15 @@ const updateProfile = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Standard Users: Profile changes go to pending approval state
-    if (user.role === 'USER') {
+    // Standard Users (non-ADMIN): Profile changes MUST NOT be applied immediately.
+    // They are saved as a pending request for Admin review.
+    if (!user.role || user.role.toUpperCase() !== 'ADMIN') {
       user.pendingUpdates = {
         data: updates,
         requestedAt: new Date(),
-        status: 'PENDING'
+        resolvedAt: null,
+        status: 'PENDING',
+        rejectReason: ''
       };
       await user.save();
       await logActivity(user._id, user.username, 'PROFILE_UPDATE_SUBMITTED', { fields: Object.keys(updates) }, req);
@@ -68,7 +71,7 @@ const updateProfile = async (req, res, next) => {
       return res.json({
         success: true,
         isPending: true,
-        message: 'Profile update request submitted for Admin approval.',
+        message: 'Your update has been submitted and is pending admin approval.',
         user: userObj
       });
     }
@@ -246,7 +249,7 @@ const updateUser = async (req, res, next) => {
 
     const user = await User.findOneAndUpdate(
       { _id: req.params.id, isDeleted: false },
-      { $set: updates },
+      { $set: updates, pendingUpdates: null },
       { new: true, runValidators: true }
     ).select('-password');
 
@@ -348,13 +351,19 @@ const getPendingUpdates = async (req, res, next) => {
 const approveProfileUpdate = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.params.id, isDeleted: false });
-    if (!user || !user.pendingUpdates || !user.pendingUpdates.data) {
+    if (!user || !user.pendingUpdates || !user.pendingUpdates.data || user.pendingUpdates.status !== 'PENDING') {
       return res.status(400).json({ success: false, message: 'No pending updates found for this user.' });
     }
 
     const proposed = user.pendingUpdates.data;
     Object.assign(user, proposed);
-    user.pendingUpdates = null;
+    user.pendingUpdates = {
+      data: proposed,
+      requestedAt: user.pendingUpdates.requestedAt,
+      resolvedAt: new Date(),
+      status: 'APPROVED',
+      rejectReason: ''
+    };
 
     await user.save();
 
@@ -377,11 +386,17 @@ const rejectProfileUpdate = async (req, res, next) => {
   try {
     const { reason } = req.body;
     const user = await User.findOne({ _id: req.params.id, isDeleted: false });
-    if (!user || !user.pendingUpdates) {
+    if (!user || !user.pendingUpdates || user.pendingUpdates.status !== 'PENDING') {
       return res.status(400).json({ success: false, message: 'No pending updates found for this user.' });
     }
 
-    user.pendingUpdates = null;
+    user.pendingUpdates = {
+      data: user.pendingUpdates.data,
+      requestedAt: user.pendingUpdates.requestedAt,
+      resolvedAt: new Date(),
+      status: 'REJECTED',
+      rejectReason: reason || 'Request rejected by Administrator.'
+    };
     await user.save();
 
     await logActivity(user._id, user.username, 'PROFILE_UPDATE_REJECTED', { admin: req.user.username, reason }, req);
@@ -394,6 +409,21 @@ const rejectProfileUpdate = async (req, res, next) => {
       message: `Profile update request for @${user.username} rejected.`,
       user: userResponse
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const clearPendingStatus = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (user && user.pendingUpdates && user.pendingUpdates.status !== 'PENDING') {
+      user.pendingUpdates = null;
+      await user.save();
+    }
+    const userObj = user.toObject();
+    delete userObj.password;
+    res.json({ success: true, user: userObj });
   } catch (error) {
     next(error);
   }
@@ -412,5 +442,6 @@ module.exports = {
   resetUserPassword,
   getPendingUpdates,
   approveProfileUpdate,
-  rejectProfileUpdate
+  rejectProfileUpdate,
+  clearPendingStatus
 };

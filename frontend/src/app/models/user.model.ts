@@ -49,7 +49,9 @@ export interface User {
   pendingUpdates?: {
     data: any;
     requestedAt: string | Date;
+    resolvedAt?: string | Date;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    rejectReason?: string;
   } | null;
   createdAt: string | Date;
   updatedAt: string | Date;

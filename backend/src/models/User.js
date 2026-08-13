@@ -183,7 +183,9 @@ const UserSchema = new mongoose.Schema({
   pendingUpdates: {
     data: { type: Object, default: null },
     requestedAt: { type: Date, default: null },
-    status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: null }
+    resolvedAt: { type: Date, default: null },
+    status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: null },
+    rejectReason: { type: String, default: '' }
   }
 }, {
   timestamps: true

@@ -49,7 +49,7 @@
     </div>
   </div>
 
-  <!-- Pending Approval Alert Banner for Standard Users -->
+  <!-- PENDING Status Banner -->
   <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'PENDING'" 
        class="p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-pulse">
     <div class="flex items-center gap-3">
@@ -57,15 +57,56 @@
         <span class="material-icons text-2xl">hourglass_top</span>
       </div>
       <div>
-        <h4 class="text-sm font-bold tracking-tight">Pending Admin Approval</h4>
+        <h4 class="text-sm font-bold tracking-tight">Your update has been submitted and is pending admin approval.</h4>
         <p class="text-xs opacity-90">
-          Your profile updates submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt | date:'medium' }}</strong> are currently awaiting review and approval by an Admin.
+          Submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt | date:'medium' }}</strong>. Your current profile information will remain unchanged until an Admin reviews and approves your requested updates.
         </p>
       </div>
     </div>
-    <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold shrink-0">
+    <span class="px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-extrabold shrink-0">
       Status: Pending Approval
     </span>
+  </div>
+
+  <!-- APPROVED Status Banner -->
+  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'APPROVED'" 
+       class="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 shrink-0 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+        <span class="material-icons text-2xl">check_circle</span>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold tracking-tight">Profile Updates Approved & Applied!</h4>
+        <p class="text-xs opacity-90">
+          Your requested profile changes were approved by an Administrator on <strong>{{ authService.currentUser()?.pendingUpdates?.resolvedAt | date:'medium' }}</strong> and successfully applied to your live profile.
+        </p>
+      </div>
+    </div>
+    <button (click)="dismissPendingStatus()" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shrink-0 cursor-pointer">
+      Got it / Dismiss
+    </button>
+  </div>
+
+  <!-- REJECTED Status Banner -->
+  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'REJECTED'" 
+       class="p-5 rounded-3xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 shrink-0 rounded-2xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+        <span class="material-icons text-2xl">cancel</span>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold tracking-tight">Profile Update Request Rejected</h4>
+        <p class="text-xs opacity-90">
+          Your requested profile changes submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt | date:'medium' }}</strong> were rejected by Admin. Your existing profile information remains unchanged.
+        </p>
+        <p *ngIf="authService.currentUser()?.pendingUpdates?.rejectReason" class="text-xs font-semibold text-rose-600 dark:text-rose-300 mt-1 italic">
+          Reason: "{{ authService.currentUser()?.pendingUpdates?.rejectReason }}"
+        </p>
+      </div>
+    </div>
+    <button (click)="dismissPendingStatus()" class="px-3.5 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-all shrink-0 cursor-pointer">
+      Acknowledge / Dismiss
+    </button>
   </div>
 
   <!-- HEADER HERO BANNER CARD -->
@@ -393,6 +434,13 @@
       </button>
     </div>
 
+    <!-- Lock Warning if Pending Update Exists -->
+    <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'PENDING'" 
+         class="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-center gap-3">
+      <span class="material-icons text-xl text-amber-500">lock_clock</span>
+      <span>You currently have a pending profile update request under review by an Admin. New edits cannot be submitted until your pending request is processed.</span>
+    </div>
+
     <form [formGroup]="profileForm" (ngSubmit)="onSubmitProfile()" class="space-y-8">
       
       <!-- Section 1: Personal Info -->
@@ -590,7 +638,7 @@
         <button type="button" (click)="activeTab.set('details')" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
           Cancel
         </button>
-        <button type="submit" [disabled]="isSubmitting()" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-premium flex items-center gap-2 cursor-pointer transition-all">
+        <button type="submit" [disabled]="isSubmitting() || authService.currentUser()?.pendingUpdates?.status === 'PENDING'" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold shadow-premium flex items-center gap-2 cursor-pointer transition-all">
           <span *ngIf="isSubmitting()" class="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
           <span>{{ isSubmitting() ? 'Saving Profile Changes...' : 'Save Profile Changes' }}</span>
         </button>

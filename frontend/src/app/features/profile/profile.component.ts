@@ -275,4 +275,15 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
+
+  dismissPendingStatus() {
+    this.userService.clearPendingStatus().subscribe({
+      next: (res) => {
+        if (res.success) {
+          localStorage.setItem('user', JSON.stringify(res.user));
+          this.authService.currentUser.set(res.user);
+        }
+      }
+    });
+  }
 }

@@ -21,6 +21,11 @@ export class UserService {
     return this.http.put<{ success: boolean; user: User; isPending?: boolean; message: string }>(`${this.apiUrl}/me`, profileData);
   }
 
+  // Clear acknowledged pending status notification banner for current user
+  clearPendingStatus(): Observable<{ success: boolean; user: User }> {
+    return this.http.post<{ success: boolean; user: User }>(`${this.apiUrl}/me/clear-pending-status`, {});
+  }
+
   // Upload current user profile photo
   uploadProfilePicture(file: File): Observable<{ success: boolean; profilePicture: string; message: string }> {
     const formData = new FormData();
