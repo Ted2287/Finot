@@ -114,6 +114,7 @@ export class UsersComponent implements OnInit {
       password: [''],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
+      dateOfBirth: [''],
       gender: ['', Validators.required],
       role: ['USER', Validators.required],
       maritalStatus: ['', Validators.required],
@@ -347,6 +348,7 @@ export class UsersComponent implements OnInit {
 
   openEditModal(user: User) {
     this.editUserId.set(user._id);
+    const dobVal = user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().substring(0, 10) : '';
     
     this.userForm = this.fb.group({
       firstName: [user.firstName, Validators.required],
@@ -356,6 +358,7 @@ export class UsersComponent implements OnInit {
       password: [''],
       email: [user.email, [Validators.required, Validators.email]],
       phoneNumber: [user.phoneNumber || '', Validators.required],
+      dateOfBirth: [dobVal],
       gender: [user.gender || '', Validators.required],
       role: [user.role, Validators.required],
       maritalStatus: [user.maritalStatus || '', Validators.required],
@@ -382,6 +385,11 @@ export class UsersComponent implements OnInit {
     this.onModalMaritalStatusChange();
     this.onFatherConfessorChange();
     this.isModalOpen.set(true);
+  }
+
+  hasError(controlName: string): boolean {
+    const control = this.userForm?.get(controlName);
+    return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
   closeModal() {

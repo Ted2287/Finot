@@ -420,131 +420,301 @@
   <div *ngIf="isModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl space-y-6 max-h-[90vh] flex flex-col">
       
-      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-        <div>
-          <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-            {{ editUserId() ? 'Edit Sunday School Member' : 'Register New Member' }}
-          </h3>
-          <p class="text-xs text-slate-400">Fill in all required fields marked with *</p>
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-lg shadow-inner">
+            <span class="material-icons">{{ editUserId() ? 'manage_accounts' : 'person_add' }}</span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              {{ editUserId() ? 'Edit Sunday School Member' : 'Register New Member' }}
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Fill in all personal, contact, educational, service, and spiritual details.</p>
+          </div>
         </div>
-        <button (click)="closeModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+        <button (click)="closeModal()" class="h-10 w-10 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors">
           <span class="material-icons">close</span>
         </button>
       </div>
 
-      <form [formGroup]="userForm" (ngSubmit)="onSubmitForm()" class="flex-1 overflow-y-auto space-y-6 pr-2 custom-scroll">
-        <!-- Form Content -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">First Name *</label>
-            <input type="text" formControlName="firstName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Name *</label>
-            <input type="text" formControlName="fatherName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Grandfather Name *</label>
-            <input type="text" formControlName="grandfatherName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
+      <!-- Modal Form Body -->
+      <form [formGroup]="userForm" (ngSubmit)="onSubmitForm()" class="flex-1 overflow-y-auto space-y-8 pr-2 custom-scroll">
+        
+        <!-- SECTION 1: PERSONAL INFORMATION -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <span class="h-7 w-7 rounded-xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-xs">1</span>
+            <h4 class="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider">
+              Personal Information & Identification
+            </h4>
           </div>
 
-          <div *ngIf="!editUserId()">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Username *</label>
-            <input type="text" formControlName="username" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Account Credentials (Only on New Member Registration) -->
+            <div *ngIf="!editUserId()">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Username *</label>
+              <input type="text" formControlName="username" [ngClass]="{'border-rose-500': hasError('username')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('username')" class="text-rose-400 text-[10px] mt-1 block">Username is required (min 3 chars)</span>
+            </div>
 
-          <div *ngIf="!editUserId()">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Password *</label>
-            <input type="password" formControlName="password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
+            <div *ngIf="!editUserId()">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Password *</label>
+              <input type="password" formControlName="password" [ngClass]="{'border-rose-500': hasError('password')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('password')" class="text-rose-400 text-[10px] mt-1 block">Password is required (min 6 chars)</span>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email *</label>
-            <input type="email" formControlName="email" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Email Address *</label>
+              <input type="email" formControlName="email" [ngClass]="{'border-rose-500': hasError('email')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('email')" class="text-rose-400 text-[10px] mt-1 block">Valid email is required</span>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Phone Number *</label>
-            <input type="tel" formControlName="phoneNumber" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Account Role *</label>
+              <select formControlName="role" [ngClass]="{'border-rose-500': hasError('role')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="USER">Standard Member (USER)</option>
+                <option value="ADMIN">Administrator (ADMIN)</option>
+              </select>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Gender *</label>
-            <select formControlName="gender" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f2_firstName') }} *</label>
+              <input type="text" formControlName="firstName" [ngClass]="{'border-rose-500': hasError('firstName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('firstName')" class="text-rose-400 text-[10px] mt-1 block">First Name is required</span>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Role *</label>
-            <select formControlName="role" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-              <option value="USER">User (Standard Member)</option>
-              <option value="ADMIN">Admin (Administrator)</option>
-            </select>
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f3_fatherName') }} *</label>
+              <input type="text" formControlName="fatherName" [ngClass]="{'border-rose-500': hasError('fatherName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('fatherName')" class="text-rose-400 text-[10px] mt-1 block">Father's Name is required</span>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Marital Status *</label>
-            <select formControlName="maritalStatus" (change)="onModalMaritalStatusChange()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-            </select>
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f4_grandfatherName') }} *</label>
+              <input type="text" formControlName="grandfatherName" [ngClass]="{'border-rose-500': hasError('grandfatherName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('grandfatherName')" class="text-rose-400 text-[10px] mt-1 block">Grandfather's Name is required</span>
+            </div>
 
-          <div *ngIf="isModalMarried()" class="md:col-span-2">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Spouse Name *</label>
-            <input type="text" formControlName="spouseName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f5_gender') }} *</label>
+              <select formControlName="gender" [ngClass]="{'border-rose-500': hasError('gender')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="Male">ወንድ (Male)</option>
+                <option value="Female">ሴት (Female)</option>
+              </select>
+              <span *ngIf="hasError('gender')" class="text-rose-400 text-[10px] mt-1 block">Gender is required</span>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Emergency Contact Name *</label>
-            <input type="text" formControlName="emergencyContactName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f7_dob') }}</label>
+              <input type="date" formControlName="dateOfBirth" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Emergency Contact Phone *</label>
-            <input type="tel" formControlName="emergencyContactPhone" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f8_maritalStatus') }} *</label>
+              <select formControlName="maritalStatus" (change)="onModalMaritalStatusChange()" [ngClass]="{'border-rose-500': hasError('maritalStatus')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="Single">ያላገባ (Single)</option>
+                <option value="Married">ያገባ (Married)</option>
+              </select>
+              <span *ngIf="hasError('maritalStatus')" class="text-rose-400 text-[10px] mt-1 block">Marital Status is required</span>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Service Department</label>
-            <select formControlName="serviceSubSection" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-              <option value="">Select</option>
-              <option value="Education Dept">ትምህርት ክፍል</option>
-              <option value="Children Dept">ህፃናት</option>
-              <option value="Office">ጽ/ቤት</option>
-              <option value="Development Dept">ልማት ክፍል</option>
-              <option value="Purchasing Dept">ግዥ ክፍል</option>
-            </select>
+            <div *ngIf="isModalMarried()" class="md:col-span-3">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f9_spouseName') }} *</label>
+              <input type="text" formControlName="spouseName" [ngClass]="{'border-rose-500': hasError('spouseName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('spouseName')" class="text-rose-400 text-[10px] mt-1 block">Spouse's Name is required</span>
+            </div>
           </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Confessor Status *</label>
-            <select formControlName="hasFatherConfessor" (change)="onFatherConfessorChange()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </div>
-
-          <div *ngIf="hasFatherConfessor()">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Confessor Name *</label>
-            <input type="text" formControlName="fatherConfessorName" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
-
-          <div *ngIf="hasFatherConfessor()">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Father Confessor Parish</label>
-            <input type="text" formControlName="fatherConfessorParish" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500">
-          </div>
-
         </div>
 
-        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
-          <button type="button" (click)="closeModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+        <!-- SECTION 2: CONTACT & EMERGENCY INFO -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <span class="h-7 w-7 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">2</span>
+            <h4 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+              Contact & Emergency Details
+            </h4>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f10_phone') }} *</label>
+              <input type="tel" formControlName="phoneNumber" [ngClass]="{'border-rose-500': hasError('phoneNumber')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('phoneNumber')" class="text-rose-400 text-[10px] mt-1 block">Phone Number is required</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f11_emergencyName') }} *</label>
+              <input type="text" formControlName="emergencyContactName" [ngClass]="{'border-rose-500': hasError('emergencyContactName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('emergencyContactName')" class="text-rose-400 text-[10px] mt-1 block">Emergency Contact Name is required</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f12_emergencyPhone') }} *</label>
+              <input type="tel" formControlName="emergencyContactPhone" [ngClass]="{'border-rose-500': hasError('emergencyContactPhone')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('emergencyContactPhone')" class="text-rose-400 text-[10px] mt-1 block">Emergency Phone is required</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f13_telegram') }}</label>
+              <select formControlName="usesTelegram" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="Yes">አዎ (Yes)</option>
+                <option value="No">አይ (No)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: EDUCATIONAL BACKGROUND -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <span class="h-7 w-7 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">3</span>
+            <h4 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+              Educational Background & Qualifications
+            </h4>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f14_eduLevel') }}</label>
+              <select formControlName="educationLevel" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="">-- Select Level --</option>
+                <option value="High School">High School / 2ኛ ደረጃ</option>
+                <option value="Diploma">Diploma / ዲፕሎማ</option>
+                <option value="Bachelor Degree">Bachelor Degree / የመጀመሪያ ዲግሪ</option>
+                <option value="Master Degree">Master's Degree / ሁለተኛ ዲግሪ</option>
+                <option value="PhD">PhD / ዶክተሬት</option>
+                <option value="Other">Other / ሌላ</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f15_institution') }}</label>
+              <input type="text" formControlName="graduationInstitution" list="adminUniversityList" placeholder="e.g. Addis Ababa University" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <datalist id="adminUniversityList">
+                <option *ngFor="let uni of universities" [value]="uni"></option>
+              </datalist>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f16_fieldOfStudy') }}</label>
+              <input type="text" formControlName="fieldOfStudy" placeholder="e.g. Computer Science" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SUNDAY SCHOOL & SERVICE DETAILS -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <span class="h-7 w-7 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-xs">4</span>
+            <h4 class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+              Sunday School & Service Details
+            </h4>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f17_joinedYear') }}</label>
+              <input type="number" formControlName="joinedYear" placeholder="e.g. 2015" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f18_grewUp') }}</label>
+              <select formControlName="grewUpInChildrenClass" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="Yes">አዎ (Yes)</option>
+                <option value="No">አይ (No)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f19_ssGrade') }}</label>
+              <select formControlName="sundaySchoolGrade" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="">-- Select Status/Grade --</option>
+                <option value="Grade 1">1ኛ ክፍል</option>
+                <option value="Grade 2">2ኛ ክፍል</option>
+                <option value="Grade 3">3ኛ ክፍል</option>
+                <option value="Graduated">ተመርቄአለሁ (Graduated)</option>
+                <option value="Not Studying">እየተማርኩ አይደለም (Not Studying)</option>
+              </select>
+            </div>
+
+            <div *ngIf="isNotStudying()" class="md:col-span-3">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f20_whyNotStudying') }}</label>
+              <textarea formControlName="notStudyingReason" rows="2" placeholder="State reason..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f21_subSection') }}</label>
+              <select formControlName="serviceSubSection" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="">-- Select Service Dept --</option>
+                <option value="Education Dept">ትምህርት ክፍል</option>
+                <option value="Children Dept">ህፃናት ክፍል</option>
+                <option value="Office">ጽ/ቤት</option>
+                <option value="Development Dept">ልማት ክፍል</option>
+                <option value="Purchasing Dept">ግዥ ክፍል</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f22_servedOtherParish') }}</label>
+              <select formControlName="servedInOtherParish" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="Yes">አዎ አገልግያለሁ (Yes)</option>
+                <option value="No">አላገለገልኩም (No)</option>
+              </select>
+            </div>
+
+            <div *ngIf="hasServedOtherParish()" class="md:col-span-3">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f23_prevSubSection') }}</label>
+              <input type="text" formControlName="previousServiceSubSection" placeholder="e.g. Choir, Education Dept..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 5: SPIRITUAL LIFE (FATHER CONFESSOR) -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <span class="h-7 w-7 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-xs">5</span>
+            <h4 class="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+              Spiritual Life & Father Confessor
+            </h4>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f24_hasFatherConfessor') }} *</label>
+              <select formControlName="hasFatherConfessor" (change)="onFatherConfessorChange()" [ngClass]="{'border-rose-500': hasError('hasFatherConfessor')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+                <option value="Yes">አዎ አለኝ (Yes)</option>
+                <option value="No">የለኝም (No)</option>
+              </select>
+              <span *ngIf="hasError('hasFatherConfessor')" class="text-rose-400 text-[10px] mt-1 block">Father Confessor status is required</span>
+            </div>
+
+            <div *ngIf="hasFatherConfessor()">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f25_fcName') }} *</label>
+              <input type="text" formControlName="fatherConfessorName" [ngClass]="{'border-rose-500': hasError('fatherConfessorName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+              <span *ngIf="hasError('fatherConfessorName')" class="text-rose-400 text-[10px] mt-1 block">Father Confessor Name is required</span>
+            </div>
+
+            <div *ngIf="hasFatherConfessor()">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f26_fcParish') }}</label>
+              <input type="text" formControlName="fatherConfessorParish" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            </div>
+
+            <div *ngIf="hasFatherConfessor()">
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f27_fcPhone') }}</label>
+              <input type="tel" formControlName="fatherConfessorPhone" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Footer inside Form -->
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 shrink-0">
+          <button type="button" (click)="closeModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             Cancel
           </button>
-          <button type="submit" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-semibold shadow-premium">
-            {{ editUserId() ? 'Save Member Changes' : 'Register Member' }}
+          <button type="submit" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-semibold shadow-premium flex items-center gap-2 transition-all cursor-pointer">
+            <span class="material-icons text-base">check_circle</span>
+            <span>{{ editUserId() ? 'Save Member Changes' : 'Register Member' }}</span>
           </button>
         </div>
       </form>
