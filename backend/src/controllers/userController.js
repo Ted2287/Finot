@@ -52,7 +52,24 @@ const updateProfile = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // ALL profile update requests MUST NOT be applied immediately to live user record.
+    if (user.role === 'ADMIN') {
+      // Admin updating their own profile applies immediately
+      Object.assign(user, updates);
+      user.pendingUpdates = null;
+      user.markModified('pendingUpdates');
+      await user.save();
+      await logActivity(user._id, user.username, 'PROFILE_UPDATE', { fields: Object.keys(updates) }, req);
+      const userObj = user.toObject();
+      delete userObj.password;
+      return res.json({
+        success: true,
+        isPending: false,
+        message: 'Profile updated successfully.',
+        user: userObj
+      });
+    }
+
+    // Standard User profile update requests MUST NOT be applied immediately to live user record.
     // They are recorded into pendingUpdates and sent to Pending Approvals page for Admin review.
     user.pendingUpdates = {
       data: updates,
@@ -61,6 +78,7 @@ const updateProfile = async (req, res, next) => {
       status: 'PENDING',
       rejectReason: ''
     };
+    user.markModified('pendingUpdates');
     await user.save();
     await logActivity(user._id, user.username, 'PROFILE_UPDATE_SUBMITTED', { fields: Object.keys(updates) }, req);
 
@@ -233,25 +251,30 @@ const updateUser = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // User updates submitted from Users page also go to pending approval
-    user.pendingUpdates = {
-      data: updates,
-      requestedAt: new Date(),
-      resolvedAt: null,
-      status: 'PENDING',
-      rejectReason: ''
-    };
+    // Admin updates take effect immediately on live fields
+    Object.assign(user, updates);
+
+    // If user had a pending update, mark it approved
+    if (user.pendingUpdates && user.pendingUpdates.status === 'PENDING') {
+      user.pendingUpdates = {
+        data: updates,
+        requestedAt: user.pendingUpdates.requestedAt,
+        resolvedAt: new Date(),
+        status: 'APPROVED',
+        rejectReason: ''
+      };
+    }
+    user.markModified('pendingUpdates');
     await user.save();
 
-    await logActivity(user._id, user.username, 'USER_UPDATE_SUBMITTED', { admin: req.user.username, fields: Object.keys(updates) }, req);
+    await logActivity(user._id, user.username, 'USER_UPDATE_DIRECT', { admin: req.user.username, fields: Object.keys(updates) }, req);
 
     const userObj = user.toObject();
     delete userObj.password;
 
     res.json({
       success: true,
-      isPending: true,
-      message: 'User update submitted and pending approval on Pending Approvals page.',
+      message: 'User updated successfully',
       user: userObj
     });
   } catch (error) {
@@ -358,7 +381,7 @@ const approveProfileUpdate = async (req, res, next) => {
       status: 'APPROVED',
       rejectReason: ''
     };
-
+    user.markModified('pendingUpdates');
     await user.save();
 
     await logActivity(user._id, user.username, 'PROFILE_UPDATE_APPROVED', { admin: req.user.username, approvedFields: Object.keys(proposed) }, req);
@@ -391,6 +414,7 @@ const rejectProfileUpdate = async (req, res, next) => {
       status: 'REJECTED',
       rejectReason: reason || 'Request rejected by Administrator.'
     };
+    user.markModified('pendingUpdates');
     await user.save();
 
     await logActivity(user._id, user.username, 'PROFILE_UPDATE_REJECTED', { admin: req.user.username, reason }, req);
@@ -413,6 +437,7 @@ const clearPendingStatus = async (req, res, next) => {
     const user = await User.findById(req.user.id);
     if (user && user.pendingUpdates && user.pendingUpdates.status !== 'PENDING') {
       user.pendingUpdates = null;
+      user.markModified('pendingUpdates');
       await user.save();
     }
     const userObj = user.toObject();
