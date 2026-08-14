@@ -1,47 +1,53 @@
 <div class="space-y-8 animate-fadeIn pb-12 font-sans">
-  
+
   <!-- Upper Page Title & Controls Bar -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
       <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">My Member Profile</h1>
-      <p class="text-slate-500 dark:text-slate-400 mt-1">View and manage your Sunday School membership details, contact info, and spiritual profile.</p>
+      <p class="text-slate-500 dark:text-slate-400 mt-1">View and manage your Sunday School membership details, contact
+        info, and spiritual profile.</p>
     </div>
 
     <!-- Language Switcher Toggle & Navigation Tabs -->
     <div class="flex flex-wrap items-center gap-3">
       <!-- Language Toggle -->
-      <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <button (click)="langService.setLanguage('am')" 
-                [ngClass]="langService.currentLang() === 'am' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+      <div
+        class="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <button (click)="langService.setLanguage('am')"
+          [ngClass]="langService.currentLang() === 'am' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
           <span>🇪🇹</span>
           <span>አማርኛ</span>
         </button>
-        <button (click)="langService.setLanguage('en')" 
-                [ngClass]="langService.currentLang() === 'en' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+        <button (click)="langService.setLanguage('en')"
+          [ngClass]="langService.currentLang() === 'en' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
           <span>🇬🇧</span>
           <span>English</span>
         </button>
       </div>
 
       <!-- Action Tab Switcher -->
-      <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <button (click)="activeTab.set('details')" 
-                [ngClass]="activeTab() === 'details' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+      <div
+        class="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <button (click)="activeTab.set('details')"
+          [ngClass]="activeTab() === 'details' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
           <span class="material-icons text-base">person</span>
           <span>Profile Details</span>
         </button>
-        <button (click)="activeTab.set('edit')" 
-                [ngClass]="activeTab() === 'edit' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+        <!-- Edit Profile button disabled/commented out for standard users as requested -->
+        <!--
+        <button (click)="activeTab.set('edit')"
+          [ngClass]="activeTab() === 'edit' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
           <span class="material-icons text-base">edit</span>
           <span>Edit Profile</span>
         </button>
-        <button (click)="activeTab.set('password')" 
-                [ngClass]="activeTab() === 'password' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+        -->
+        <button (click)="activeTab.set('password')"
+          [ngClass]="activeTab() === 'password' ? 'bg-primary-500 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
           <span class="material-icons text-base">lock</span>
           <span>Security</span>
         </button>
@@ -50,84 +56,102 @@
   </div>
 
   <!-- PENDING Status Banner -->
-  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'PENDING'" 
-       class="p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-pulse">
+  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'PENDING'"
+    class="p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-pulse">
     <div class="flex items-center gap-3">
-      <div class="h-10 w-10 shrink-0 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+      <div
+        class="h-10 w-10 shrink-0 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
         <span class="material-icons text-2xl">hourglass_top</span>
       </div>
       <div>
         <h4 class="text-sm font-bold tracking-tight">Your update has been submitted and is pending admin approval.</h4>
         <p class="text-xs opacity-90">
-          Submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt | date:'medium' }}</strong>. Your current profile information will remain unchanged until an Admin reviews and approves your requested updates.
+          Submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt | date:'medium' }}</strong>.
+          Your current profile information will remain unchanged until an Admin reviews and approves your requested
+          updates.
         </p>
       </div>
     </div>
-    <span class="px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-extrabold shrink-0">
+    <span
+      class="px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-extrabold shrink-0">
       Status: Pending Approval
     </span>
   </div>
 
   <!-- APPROVED Status Banner -->
-  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'APPROVED'" 
-       class="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'APPROVED'"
+    class="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
     <div class="flex items-center gap-3">
-      <div class="h-10 w-10 shrink-0 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+      <div
+        class="h-10 w-10 shrink-0 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
         <span class="material-icons text-2xl">check_circle</span>
       </div>
       <div>
         <h4 class="text-sm font-bold tracking-tight">Profile Updates Approved & Applied!</h4>
         <p class="text-xs opacity-90">
-          Your requested profile changes were approved by an Administrator on <strong>{{ authService.currentUser()?.pendingUpdates?.resolvedAt | date:'medium' }}</strong> and successfully applied to your live profile.
+          Your requested profile changes were approved by an Administrator on <strong>{{
+            authService.currentUser()?.pendingUpdates?.resolvedAt | date:'medium' }}</strong> and successfully applied
+          to your live profile.
         </p>
       </div>
     </div>
-    <button (click)="dismissPendingStatus()" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shrink-0 cursor-pointer">
+    <button (click)="dismissPendingStatus()"
+      class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shrink-0 cursor-pointer">
       Got it / Dismiss
     </button>
   </div>
 
   <!-- REJECTED Status Banner -->
-  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'REJECTED'" 
-       class="p-5 rounded-3xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+  <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'REJECTED'"
+    class="p-5 rounded-3xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
     <div class="flex items-center gap-3">
-      <div class="h-10 w-10 shrink-0 rounded-2xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+      <div
+        class="h-10 w-10 shrink-0 rounded-2xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
         <span class="material-icons text-2xl">cancel</span>
       </div>
       <div>
         <h4 class="text-sm font-bold tracking-tight">Profile Update Request Rejected</h4>
         <p class="text-xs opacity-90">
-          Your requested profile changes submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt | date:'medium' }}</strong> were rejected by Admin. Your existing profile information remains unchanged.
+          Your requested profile changes submitted on <strong>{{ authService.currentUser()?.pendingUpdates?.requestedAt
+            | date:'medium' }}</strong> were rejected by Admin. Your existing profile information remains unchanged.
         </p>
-        <p *ngIf="authService.currentUser()?.pendingUpdates?.rejectReason" class="text-xs font-semibold text-rose-600 dark:text-rose-300 mt-1 italic">
+        <p *ngIf="authService.currentUser()?.pendingUpdates?.rejectReason"
+          class="text-xs font-semibold text-rose-600 dark:text-rose-300 mt-1 italic">
           Reason: "{{ authService.currentUser()?.pendingUpdates?.rejectReason }}"
         </p>
       </div>
     </div>
-    <button (click)="dismissPendingStatus()" class="px-3.5 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-all shrink-0 cursor-pointer">
+    <button (click)="dismissPendingStatus()"
+      class="px-3.5 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-all shrink-0 cursor-pointer">
       Acknowledge / Dismiss
     </button>
   </div>
 
   <!-- HEADER HERO BANNER CARD -->
-  <div *ngIf="authService.currentUser()" class="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 p-6 sm:p-8 shadow-xl dark:shadow-2xl">
+  <div *ngIf="authService.currentUser()"
+    class="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 p-6 sm:p-8 shadow-xl dark:shadow-2xl">
     <!-- Background decorative glow -->
     <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary-500/10 blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none">
+    </div>
 
     <div class="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
-      
+
       <!-- Avatar / Profile Picture Container with Upload Hover -->
       <div class="relative shrink-0 group">
-        <div class="h-28 w-28 sm:h-32 sm:w-32 rounded-3xl overflow-hidden bg-gradient-to-br from-primary-500 to-indigo-600 p-1 shadow-2xl">
-          <div class="h-full w-full rounded-[22px] bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden relative">
+        <div
+          class="h-28 w-28 sm:h-32 sm:w-32 rounded-3xl overflow-hidden bg-gradient-to-br from-primary-500 to-indigo-600 p-1 shadow-2xl">
+          <div
+            class="h-full w-full rounded-[22px] bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden relative">
             <img *ngIf="getProfileImageUrl()" [src]="getProfileImageUrl()" class="h-full w-full object-cover">
-            <span *ngIf="!getProfileImageUrl()" class="text-3xl sm:text-4xl font-extrabold text-primary-600 dark:text-primary-400">
+            <span *ngIf="!getProfileImageUrl()"
+              class="text-3xl sm:text-4xl font-extrabold text-primary-600 dark:text-primary-400">
               {{ getInitials(authService.currentUser()!) }}
             </span>
 
             <!-- Upload Photo Overlay -->
-            <label class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-white">
+            <label
+              class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-white">
               <span class="material-icons text-2xl">photo_camera</span>
               <span class="text-[10px] font-extrabold uppercase tracking-wider mt-1">Change Photo</span>
               <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*">
@@ -136,8 +160,9 @@
         </div>
 
         <!-- Role Badge Over Avatar -->
-        <span [ngClass]="authService.currentUser()?.role === 'ADMIN' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-200'"
-              class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md whitespace-nowrap">
+        <span
+          [ngClass]="authService.currentUser()?.role === 'ADMIN' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-200'"
+          class="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md whitespace-nowrap">
           {{ authService.currentUser()?.role }}
         </span>
       </div>
@@ -146,16 +171,19 @@
       <div class="flex-1 space-y-3">
         <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
           <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            {{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.fatherName }} {{ authService.currentUser()?.grandfatherName }}
+            {{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.fatherName }} {{
+            authService.currentUser()?.grandfatherName }}
           </h1>
-          <span class="px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+          <span
+            class="px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
             <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>Active Member</span>
           </span>
         </div>
 
         <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-          <span class="text-primary-600 dark:text-primary-400 font-bold">&#64;{{ authService.currentUser()?.username }}</span>
+          <span class="text-primary-600 dark:text-primary-400 font-bold">&#64;{{ authService.currentUser()?.username
+            }}</span>
           <span class="mx-2">•</span>
           <span>Finot Sunday School Member</span>
         </p>
@@ -163,19 +191,22 @@
         <!-- Quick Information Badges Grid -->
         <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
           <!-- Email Badge -->
-          <div class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div
+            class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span class="material-icons text-base text-primary-500">email</span>
             <span>{{ authService.currentUser()?.email }}</span>
           </div>
 
           <!-- Phone Badge -->
-          <div class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div
+            class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span class="material-icons text-base text-emerald-500">phone</span>
             <span>{{ authService.currentUser()?.phoneNumber }}</span>
           </div>
 
           <!-- Service Department Badge -->
-          <div *ngIf="authService.currentUser()?.serviceSubSection" class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div *ngIf="authService.currentUser()?.serviceSubSection"
+            class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span class="material-icons text-base text-indigo-500">work_outline</span>
             <span>{{ authService.currentUser()?.serviceSubSection }}</span>
           </div>
@@ -187,74 +218,93 @@
 
   <!-- TAB 1: VIEW DETAILS (LUXURIOUS 5-SECTION CARDS MATCHING USER DETAIL PAGE) -->
   <div *ngIf="activeTab() === 'details' && authService.currentUser()" class="space-y-8">
-    
+
     <!-- ================= SECTION 1: PERSONAL INFORMATION ================= -->
-    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+    <div
+      class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
       <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-        <div class="h-10 w-10 rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-base shadow-inner">
+        <div
+          class="h-10 w-10 rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-base shadow-inner">
           <span class="material-icons text-xl">person</span>
         </div>
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec1Title') }}</h2>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec1Title') }}
+          </h2>
           <p class="text-xs text-slate-500 dark:text-slate-400">Personal details and identification</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f2_firstName') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.firstName || '-' }}</p>
-        </div>
-
-        <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f3_fatherName') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.fatherName || authService.currentUser()?.lastName || '-' }}</p>
-        </div>
-
-        <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f4_grandfatherName') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.grandfatherName || '-' }}</p>
-        </div>
-
-        <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f5_gender') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.gender || '-' }}</p>
-        </div>
-
-        <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f7_dob') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">
-            {{ authService.currentUser()?.dateOfBirth ? (authService.currentUser()?.dateOfBirth | date:'mediumDate') : '-' }}
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f2_firstName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.firstName || '-' }}
           </p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f8_maritalStatus') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.maritalStatus || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f3_fatherName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.fatherName ||
+            authService.currentUser()?.lastName || '-' }}</p>
+        </div>
+
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f4_grandfatherName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.grandfatherName ||
+            '-' }}</p>
+        </div>
+
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f5_gender') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.gender || '-' }}</p>
+        </div>
+
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f7_dob')
+            }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">
+            {{ authService.currentUser()?.dateOfBirth ? (authService.currentUser()?.dateOfBirth | date:'mediumDate') :
+            '-' }}
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f8_maritalStatus') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.maritalStatus || '-'
+            }}</p>
         </div>
 
         <div *ngIf="authService.currentUser()?.spouseName" class="space-y-1 sm:col-span-2">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f9_spouseName') }}</span>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f9_spouseName') }}</span>
           <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.spouseName }}</p>
         </div>
       </div>
     </div>
 
     <!-- ================= SECTION 2: CONTACT & EMERGENCY INFORMATION ================= -->
-    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+    <div
+      class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
       <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-        <div class="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base shadow-inner">
+        <div
+          class="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base shadow-inner">
           <span class="material-icons text-xl">contact_phone</span>
         </div>
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec2Title') }}</h2>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec2Title') }}
+          </h2>
           <p class="text-xs text-slate-500 dark:text-slate-400">Phone numbers, email, and emergency contact</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f10_phone') }}</span>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f10_phone') }}</span>
           <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span class="material-icons text-base text-emerald-500">call</span>
             <span>{{ authService.currentUser()?.phoneNumber || '-' }}</span>
@@ -262,12 +312,15 @@
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f11_emergencyName') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.emergencyContactName || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f11_emergencyName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.emergencyContactName
+            || '-' }}</p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f12_emergencyPhone') }}</span>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f12_emergencyPhone') }}</span>
           <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span class="material-icons text-base text-rose-500">contact_support</span>
             <span>{{ authService.currentUser()?.emergencyContactPhone || '-' }}</span>
@@ -275,7 +328,8 @@
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f13_telegram') }}</span>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f13_telegram') }}</span>
           <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span class="material-icons text-base text-sky-500">send</span>
             <span>{{ authService.currentUser()?.usesTelegram || 'No' }}</span>
@@ -285,117 +339,154 @@
     </div>
 
     <!-- ================= SECTION 3: EDUCATIONAL & PROFESSIONAL BACKGROUND ================= -->
-    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+    <div
+      class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
       <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-        <div class="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-base shadow-inner">
+        <div
+          class="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-base shadow-inner">
           <span class="material-icons text-xl">school</span>
         </div>
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec3Title') }}</h2>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec3Title') }}
+          </h2>
           <p class="text-xs text-slate-500 dark:text-slate-400">Academic background and qualifications</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f14_eduLevel') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.educationLevel || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f14_eduLevel') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.educationLevel ||
+            '-' }}</p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f15_institution') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.graduationInstitution || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f15_institution') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{
+            authService.currentUser()?.graduationInstitution || '-' }}</p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f16_fieldOfStudy') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.fieldOfStudy || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f16_fieldOfStudy') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.fieldOfStudy || '-'
+            }}</p>
         </div>
       </div>
     </div>
 
     <!-- ================= SECTION 4: SUNDAY SCHOOL & SERVICE DETAILS ================= -->
-    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+    <div
+      class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
       <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-        <div class="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-base shadow-inner">
+        <div
+          class="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-base shadow-inner">
           <span class="material-icons text-xl">church</span>
         </div>
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec4Title') }}</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Sunday School grade, department, and parish service history</p>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec4Title') }}
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Sunday School grade, department, and parish service
+            history</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f17_joinedYear') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.joinedYear || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f17_joinedYear') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.joinedYear || '-' }}
+          </p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f18_grewUp') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.grewUpInChildrenClass || 'No' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f18_grewUp') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{
+            authService.currentUser()?.grewUpInChildrenClass || 'No' }}</p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f19_ssGrade') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.sundaySchoolGrade || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f19_ssGrade') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.sundaySchoolGrade ||
+            '-' }}</p>
         </div>
 
         <div *ngIf="authService.currentUser()?.notStudyingReason" class="space-y-1 sm:col-span-3">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f20_whyNotStudying') }}</span>
-          <p class="text-sm font-medium text-slate-700 dark:text-slate-300 italic bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f20_whyNotStudying') }}</span>
+          <p
+            class="text-sm font-medium text-slate-700 dark:text-slate-300 italic bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
             "{{ authService.currentUser()?.notStudyingReason }}"
           </p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f21_subSection') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.serviceSubSection || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f21_subSection') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.serviceSubSection ||
+            '-' }}</p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f22_servedOtherParish') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.servedInOtherParish || 'No' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f22_servedOtherParish') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.servedInOtherParish
+            || 'No' }}</p>
         </div>
 
         <div *ngIf="authService.currentUser()?.previousServiceSubSection" class="space-y-1 sm:col-span-3">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f23_prevSubSection') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.previousServiceSubSection }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f23_prevSubSection') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{
+            authService.currentUser()?.previousServiceSubSection }}</p>
         </div>
       </div>
     </div>
 
     <!-- ================= SECTION 5: SPIRITUAL LIFE (FATHER CONFESSOR) ================= -->
-    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+    <div
+      class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
       <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-        <div class="h-10 w-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-base shadow-inner">
+        <div
+          class="h-10 w-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-base shadow-inner">
           <span class="material-icons text-xl">auto_awesome</span>
         </div>
         <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec5Title') }}</h2>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ langService.t('sec5Title') }}
+          </h2>
           <p class="text-xs text-slate-500 dark:text-slate-400">Father confessor and spiritual guidance information</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f24_hasFatherConfessor') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.hasFatherConfessor || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f24_hasFatherConfessor') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.hasFatherConfessor
+            || '-' }}</p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f25_fcName') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.fatherConfessorName || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f25_fcName') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.fatherConfessorName
+            || '-' }}</p>
         </div>
 
         <div class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f26_fcParish') }}</span>
-          <p class="text-sm font-bold text-slate-900 dark:text-white">{{ authService.currentUser()?.fatherConfessorParish || '-' }}</p>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f26_fcParish') }}</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-white">{{
+            authService.currentUser()?.fatherConfessorParish || '-' }}</p>
         </div>
 
         <div *ngIf="authService.currentUser()?.fatherConfessorPhone" class="space-y-1">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{ langService.t('f27_fcPhone') }}</span>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">{{
+            langService.t('f27_fcPhone') }}</span>
           <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span class="material-icons text-base text-sky-500">phone</span>
             <span>{{ authService.currentUser()?.fatherConfessorPhone }}</span>
@@ -405,10 +496,12 @@
     </div>
 
     <!-- AUDIT FOOTER METADATA CARD -->
-    <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+    <div
+      class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
       <div class="flex items-center gap-2">
         <span class="material-icons text-base">fingerprint</span>
-        <span>ID: <code class="font-mono font-bold text-slate-700 dark:text-slate-300">{{ authService.currentUser()?._id }}</code></span>
+        <span>ID: <code
+            class="font-mono font-bold text-slate-700 dark:text-slate-300">{{ authService.currentUser()?._id }}</code></span>
       </div>
       <div class="flex items-center gap-2">
         <span class="material-icons text-base">schedule</span>
@@ -423,95 +516,137 @@
   </div>
 
   <!-- TAB 2: EDIT PROFILE FORM -->
-  <div *ngIf="activeTab() === 'edit'" class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
+  <div *ngIf="activeTab() === 'edit'"
+    class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6">
     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
       <div>
         <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Edit Member Profile</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Update your personal, educational, and service information.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Update your personal, educational, and service
+          information.</p>
       </div>
-      <button (click)="activeTab.set('details')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+      <button (click)="activeTab.set('details')"
+        class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
         Cancel
       </button>
     </div>
 
     <!-- Lock Warning if Pending Update Exists -->
-    <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'PENDING'" 
-         class="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-center gap-3">
+    <div *ngIf="authService.currentUser()?.pendingUpdates?.status === 'PENDING'"
+      class="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-center gap-3">
       <span class="material-icons text-xl text-amber-500">lock_clock</span>
-      <span>You currently have a pending profile update request under review by an Admin. New edits cannot be submitted until your pending request is processed.</span>
+      <span>You currently have a pending profile update request under review by an Admin. New edits cannot be submitted
+        until your pending request is processed.</span>
     </div>
 
     <form [formGroup]="profileForm" (ngSubmit)="onSubmitProfile()" class="space-y-8">
-      
+
       <!-- Section 1: Personal Info -->
       <div class="space-y-4">
-        <h4 class="text-xs font-bold text-primary-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">1. {{ langService.t('sec1Title') }}</h4>
+        <h4
+          class="text-xs font-bold text-primary-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+          1. {{ langService.t('sec1Title') }}</h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f2_firstName') }} *</label>
-            <input type="text" formControlName="firstName" [ngClass]="{'border-rose-500': hasError('firstName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('firstName')" class="text-rose-400 text-[10px] mt-1 block">First Name is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f2_firstName') }} *</label>
+            <input type="text" formControlName="firstName" [ngClass]="{'border-rose-500': hasError('firstName')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('firstName')" class="text-rose-400 text-[10px] mt-1 block">First Name is
+              required</span>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f3_fatherName') }} *</label>
-            <input type="text" formControlName="fatherName" [ngClass]="{'border-rose-500': hasError('fatherName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('fatherName')" class="text-rose-400 text-[10px] mt-1 block">Father's Name is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f3_fatherName') }} *</label>
+            <input type="text" formControlName="fatherName" [ngClass]="{'border-rose-500': hasError('fatherName')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('fatherName')" class="text-rose-400 text-[10px] mt-1 block">Father's Name is
+              required</span>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f4_grandfatherName') }} *</label>
-            <input type="text" formControlName="grandfatherName" [ngClass]="{'border-rose-500': hasError('grandfatherName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('grandfatherName')" class="text-rose-400 text-[10px] mt-1 block">Grandfather's Name is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f4_grandfatherName') }} *</label>
+            <input type="text" formControlName="grandfatherName"
+              [ngClass]="{'border-rose-500': hasError('grandfatherName')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('grandfatherName')" class="text-rose-400 text-[10px] mt-1 block">Grandfather's Name is
+              required</span>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f5_gender') }} *</label>
-            <select formControlName="gender" [ngClass]="{'border-rose-500': hasError('gender')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f5_gender') }} *</label>
+            <select formControlName="gender" [ngClass]="{'border-rose-500': hasError('gender')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="Male">ወንድ (Male)</option>
               <option value="Female">ሴት (Female)</option>
             </select>
             <span *ngIf="hasError('gender')" class="text-rose-400 text-[10px] mt-1 block">Gender is required</span>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f7_dob') }}</label>
-            <input type="date" formControlName="dateOfBirth" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f7_dob') }}</label>
+            <input type="date" formControlName="dateOfBirth"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f8_maritalStatus') }} *</label>
-            <select formControlName="maritalStatus" (change)="onProfileMaritalStatusChange()" [ngClass]="{'border-rose-500': hasError('maritalStatus')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f8_maritalStatus') }} *</label>
+            <select formControlName="maritalStatus" (change)="onProfileMaritalStatusChange()"
+              [ngClass]="{'border-rose-500': hasError('maritalStatus')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="Single">ያላገባ (Single)</option>
               <option value="Married">ያገባ (Married)</option>
             </select>
-            <span *ngIf="hasError('maritalStatus')" class="text-rose-400 text-[10px] mt-1 block">Marital Status is required</span>
+            <span *ngIf="hasError('maritalStatus')" class="text-rose-400 text-[10px] mt-1 block">Marital Status is
+              required</span>
           </div>
           <div *ngIf="isProfileMarried()" class="md:col-span-3">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f9_spouseName') }} *</label>
-            <input type="text" formControlName="spouseName" [ngClass]="{'border-rose-500': hasError('spouseName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('spouseName')" class="text-rose-400 text-[10px] mt-1 block">Spouse's Name is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f9_spouseName') }} *</label>
+            <input type="text" formControlName="spouseName" [ngClass]="{'border-rose-500': hasError('spouseName')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('spouseName')" class="text-rose-400 text-[10px] mt-1 block">Spouse's Name is
+              required</span>
           </div>
         </div>
       </div>
 
       <!-- Section 2: Contact Info -->
       <div class="space-y-4">
-        <h4 class="text-xs font-bold text-emerald-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">2. {{ langService.t('sec2Title') }}</h4>
+        <h4
+          class="text-xs font-bold text-emerald-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+          2. {{ langService.t('sec2Title') }}</h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f10_phone') }} *</label>
-            <input type="tel" formControlName="phoneNumber" [ngClass]="{'border-rose-500': hasError('phoneNumber')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('phoneNumber')" class="text-rose-400 text-[10px] mt-1 block">Phone Number is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f10_phone') }} *</label>
+            <input type="tel" formControlName="phoneNumber" [ngClass]="{'border-rose-500': hasError('phoneNumber')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('phoneNumber')" class="text-rose-400 text-[10px] mt-1 block">Phone Number is
+              required</span>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f11_emergencyName') }} *</label>
-            <input type="text" formControlName="emergencyContactName" [ngClass]="{'border-rose-500': hasError('emergencyContactName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('emergencyContactName')" class="text-rose-400 text-[10px] mt-1 block">Emergency Contact Name is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f11_emergencyName') }} *</label>
+            <input type="text" formControlName="emergencyContactName"
+              [ngClass]="{'border-rose-500': hasError('emergencyContactName')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('emergencyContactName')" class="text-rose-400 text-[10px] mt-1 block">Emergency
+              Contact Name is required</span>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f12_emergencyPhone') }} *</label>
-            <input type="tel" formControlName="emergencyContactPhone" [ngClass]="{'border-rose-500': hasError('emergencyContactPhone')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('emergencyContactPhone')" class="text-rose-400 text-[10px] mt-1 block">Emergency Contact Phone is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f12_emergencyPhone') }} *</label>
+            <input type="tel" formControlName="emergencyContactPhone"
+              [ngClass]="{'border-rose-500': hasError('emergencyContactPhone')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('emergencyContactPhone')" class="text-rose-400 text-[10px] mt-1 block">Emergency
+              Contact Phone is required</span>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f13_telegram') }}</label>
-            <select formControlName="usesTelegram" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f13_telegram') }}</label>
+            <select formControlName="usesTelegram"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="Yes">አዎ (Yes)</option>
               <option value="No">አይ (No)</option>
             </select>
@@ -521,11 +656,15 @@
 
       <!-- Section 3: Educational Background -->
       <div class="space-y-4">
-        <h4 class="text-xs font-bold text-indigo-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">3. {{ langService.t('sec3Title') }}</h4>
+        <h4
+          class="text-xs font-bold text-indigo-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+          3. {{ langService.t('sec3Title') }}</h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f14_eduLevel') }}</label>
-            <select formControlName="educationLevel" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f14_eduLevel') }}</label>
+            <select formControlName="educationLevel"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="">Select</option>
               <option value="Grade 8-10">Grade 8-10</option>
               <option value="High School">High School</option>
@@ -536,37 +675,49 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f15_institution') }}</label>
-            <input type="text" formControlName="graduationInstitution" list="profile-uni-list" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f15_institution') }}</label>
+            <input type="text" formControlName="graduationInstitution" list="profile-uni-list"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
             <datalist id="profile-uni-list">
               <option *ngFor="let uni of universities" [value]="uni"></option>
             </datalist>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f16_fieldOfStudy') }}</label>
-            <input type="text" formControlName="fieldOfStudy" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f16_fieldOfStudy') }}</label>
+            <input type="text" formControlName="fieldOfStudy"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
           </div>
         </div>
       </div>
 
       <!-- Section 4: Sunday School Details -->
       <div class="space-y-4">
-        <h4 class="text-xs font-bold text-amber-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">4. {{ langService.t('sec4Title') }}</h4>
+        <h4
+          class="text-xs font-bold text-amber-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+          4. {{ langService.t('sec4Title') }}</h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f17_joinedYear') }}</label>
-            <input type="text" formControlName="joinedYear" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f17_joinedYear') }}</label>
+            <input type="text" formControlName="joinedYear"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f18_grewUp') }}</label>
-            <select formControlName="grewUpInChildrenClass" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f18_grewUp') }}</label>
+            <select formControlName="grewUpInChildrenClass"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="Yes">አዎ (Yes)</option>
               <option value="No">አይ (No)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f19_ssGrade') }}</label>
-            <select formControlName="sundaySchoolGrade" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f19_ssGrade') }}</label>
+            <select formControlName="sundaySchoolGrade"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="">Select</option>
               <option value="9">Grade 9</option>
               <option value="10">Grade 10</option>
@@ -576,12 +727,16 @@
             </select>
           </div>
           <div *ngIf="isNotStudying()" class="md:col-span-3">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f20_whyNotStudying') }}</label>
-            <textarea formControlName="notStudyingReason" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors"></textarea>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f20_whyNotStudying') }}</label>
+            <textarea formControlName="notStudyingReason" rows="2"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors"></textarea>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f21_subSection') }}</label>
-            <select formControlName="serviceSubSection" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f21_subSection') }}</label>
+            <select formControlName="serviceSubSection"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="">Select</option>
               <option value="Education Dept">ትምህርት ክፍል</option>
               <option value="Children Dept">ህፃናት</option>
@@ -591,55 +746,77 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f22_servedOtherParish') }}</label>
-            <select formControlName="servedInOtherParish" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f22_servedOtherParish') }}</label>
+            <select formControlName="servedInOtherParish"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="No">አይ (No)</option>
               <option value="Yes">አዎ (Yes)</option>
             </select>
           </div>
           <div *ngIf="hasServedOtherParish()" class="md:col-span-3">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f23_prevSubSection') }}</label>
-            <input type="text" formControlName="previousServiceSubSection" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f23_prevSubSection') }}</label>
+            <input type="text" formControlName="previousServiceSubSection"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
           </div>
         </div>
       </div>
 
       <!-- Section 5: Father Confessor -->
       <div class="space-y-4">
-        <h4 class="text-xs font-bold text-sky-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">5. {{ langService.t('sec5Title') }}</h4>
+        <h4
+          class="text-xs font-bold text-sky-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+          5. {{ langService.t('sec5Title') }}</h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f24_hasFatherConfessor') }} *</label>
-            <select formControlName="hasFatherConfessor" (change)="onFatherConfessorChange()" [ngClass]="{'border-rose-500': hasError('hasFatherConfessor')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f24_hasFatherConfessor') }} *</label>
+            <select formControlName="hasFatherConfessor" (change)="onFatherConfessorChange()"
+              [ngClass]="{'border-rose-500': hasError('hasFatherConfessor')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
               <option value="">Select</option>
               <option value="Yes">አዎ አለኝ (Yes)</option>
               <option value="No">አይ የለኝም (No)</option>
             </select>
-            <span *ngIf="hasError('hasFatherConfessor')" class="text-rose-400 text-[10px] mt-1 block">Father Confessor selection is required</span>
+            <span *ngIf="hasError('hasFatherConfessor')" class="text-rose-400 text-[10px] mt-1 block">Father Confessor
+              selection is required</span>
           </div>
           <div *ngIf="hasFatherConfessor()">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f25_fcName') }} *</label>
-            <input type="text" formControlName="fatherConfessorName" [ngClass]="{'border-rose-500': hasError('fatherConfessorName')}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-            <span *ngIf="hasError('fatherConfessorName')" class="text-rose-400 text-[10px] mt-1 block">Father Confessor's Name is required</span>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f25_fcName') }} *</label>
+            <input type="text" formControlName="fatherConfessorName"
+              [ngClass]="{'border-rose-500': hasError('fatherConfessorName')}"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <span *ngIf="hasError('fatherConfessorName')" class="text-rose-400 text-[10px] mt-1 block">Father
+              Confessor's Name is required</span>
           </div>
           <div *ngIf="hasFatherConfessor()">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f26_fcParish') }}</label>
-            <input type="text" formControlName="fatherConfessorParish" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f26_fcParish') }}</label>
+            <input type="text" formControlName="fatherConfessorParish"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
           </div>
           <div *ngIf="hasFatherConfessor()">
-            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{ langService.t('f27_fcPhone') }}</label>
-            <input type="tel" formControlName="fatherConfessorPhone" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">{{
+              langService.t('f27_fcPhone') }}</label>
+            <input type="tel" formControlName="fatherConfessorPhone"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
           </div>
         </div>
       </div>
 
       <!-- Submit Button -->
       <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-        <button type="button" (click)="activeTab.set('details')" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <button type="button" (click)="activeTab.set('details')"
+          class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
           Cancel
         </button>
-        <button type="submit" [disabled]="isSubmitting() || authService.currentUser()?.pendingUpdates?.status === 'PENDING'" class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold shadow-premium flex items-center gap-2 cursor-pointer transition-all">
-          <span *ngIf="isSubmitting()" class="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        <button type="submit"
+          [disabled]="isSubmitting() || authService.currentUser()?.pendingUpdates?.status === 'PENDING'"
+          class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold shadow-premium flex items-center gap-2 cursor-pointer transition-all">
+          <span *ngIf="isSubmitting()"
+            class="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
           <span>{{ isSubmitting() ? 'Saving Profile Changes...' : 'Save Profile Changes' }}</span>
         </button>
       </div>
@@ -648,10 +825,12 @@
   </div>
 
   <!-- TAB 3: SECURITY SETTINGS -->
-  <div *ngIf="activeTab() === 'password'" class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl max-w-md">
-    
+  <div *ngIf="activeTab() === 'password'"
+    class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl max-w-md">
+
     <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
-      <div class="h-10 w-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-base shadow-inner">
+      <div
+        class="h-10 w-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-base shadow-inner">
         <span class="material-icons text-xl">security</span>
       </div>
       <div>
@@ -661,13 +840,15 @@
     </div>
 
     <!-- Success Alert -->
-    <div *ngIf="passwordSuccess()" class="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+    <div *ngIf="passwordSuccess()"
+      class="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
       <span class="material-icons text-base">check_circle</span>
       <span>Password updated successfully!</span>
     </div>
-    
+
     <!-- Error Alert -->
-    <div *ngIf="passwordError()" class="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+    <div *ngIf="passwordError()"
+      class="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
       <span class="material-icons text-base">error</span>
       <span>{{ passwordError() }}</span>
     </div>
@@ -675,17 +856,21 @@
     <form [formGroup]="passwordForm" (submit)="onSubmitPassword()" class="space-y-4">
       <div>
         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Current Password *</label>
-        <input type="password" formControlName="oldPassword" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+        <input type="password" formControlName="oldPassword"
+          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">New Password *</label>
-        <input type="password" formControlName="newPassword" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
-        <span *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched" class="text-rose-400 text-[10px] mt-1 block">New password must be at least 6 characters long</span>
+        <input type="password" formControlName="newPassword"
+          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-primary-500 transition-colors">
+        <span *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
+          class="text-rose-400 text-[10px] mt-1 block">New password must be at least 6 characters long</span>
       </div>
 
       <!-- Submit -->
       <div class="pt-2">
-        <button type="submit" [disabled]="passwordForm.invalid" class="w-full py-2.5 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-premium cursor-pointer transition-all">
+        <button type="submit" [disabled]="passwordForm.invalid"
+          class="w-full py-2.5 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-premium cursor-pointer transition-all">
           Update Password
         </button>
       </div>
