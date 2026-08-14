@@ -54,13 +54,12 @@ const updateProfile = async (req, res, next) => {
 
     if (user.role === 'ADMIN') {
       // Admin updating their own profile applies immediately
-      Object.assign(user, updates);
-      user.pendingUpdates = null;
-      user.markModified('pendingUpdates');
-      await user.save();
+      await User.updateOne({ _id: user._id }, { $set: { ...updates, pendingUpdates: null } });
       await logActivity(user._id, user.username, 'PROFILE_UPDATE', { fields: Object.keys(updates) }, req);
-      const userObj = user.toObject();
-      delete userObj.password;
+      
+      const updatedUser = await User.findById(user._id).select('-password');
+      const userObj = updatedUser.toObject();
+
       return res.json({
         success: true,
         isPending: false,
@@ -71,19 +70,23 @@ const updateProfile = async (req, res, next) => {
 
     // Standard User profile update requests MUST NOT be applied immediately to live user record.
     // They are recorded into pendingUpdates and sent to Pending Approvals page for Admin review.
-    user.pendingUpdates = {
+    const pendingObj = {
       data: updates,
       requestedAt: new Date(),
       resolvedAt: null,
       status: 'PENDING',
       rejectReason: ''
     };
-    user.markModified('pendingUpdates');
-    await user.save();
+
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { pendingUpdates: pendingObj } }
+    );
+
     await logActivity(user._id, user.username, 'PROFILE_UPDATE_SUBMITTED', { fields: Object.keys(updates) }, req);
 
-    const userObj = user.toObject();
-    delete userObj.password;
+    const updatedUser = await User.findById(user._id).select('-password');
+    const userObj = updatedUser.toObject();
 
     return res.json({
       success: true,
@@ -113,15 +116,15 @@ const uploadProfilePicture = async (req, res, next) => {
       }
     }
 
-    user.profilePicture = req.file.path.replace(/\\/g, '/');
-    await user.save();
+    const newPath = req.file.path.replace(/\\/g, '/');
+    await User.updateOne({ _id: user._id }, { $set: { profilePicture: newPath } });
 
     await logActivity(user._id, user.username, 'PROFILE_PICTURE_CHANGE', {}, req);
 
     res.json({
       success: true,
       message: 'Profile picture updated',
-      profilePicture: user.profilePicture
+      profilePicture: newPath
     });
   } catch (error) {
     next(error);
@@ -251,12 +254,13 @@ const updateUser = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Admin updates take effect immediately on live fields
-    Object.assign(user, updates);
+    const updatePayload = {
+      ...updates
+    };
 
     // If user had a pending update, mark it approved
     if (user.pendingUpdates && user.pendingUpdates.status === 'PENDING') {
-      user.pendingUpdates = {
+      updatePayload.pendingUpdates = {
         data: updates,
         requestedAt: user.pendingUpdates.requestedAt,
         resolvedAt: new Date(),
@@ -264,13 +268,13 @@ const updateUser = async (req, res, next) => {
         rejectReason: ''
       };
     }
-    user.markModified('pendingUpdates');
-    await user.save();
+
+    await User.updateOne({ _id: user._id }, { $set: updatePayload });
 
     await logActivity(user._id, user.username, 'USER_UPDATE_DIRECT', { admin: req.user.username, fields: Object.keys(updates) }, req);
 
-    const userObj = user.toObject();
-    delete userObj.password;
+    const updatedUser = await User.findById(user._id).select('-password');
+    const userObj = updatedUser.toObject();
 
     res.json({
       success: true,
@@ -309,15 +313,17 @@ const toggleActivation = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    user.isActive = !user.isActive;
-    await user.save();
+    const newStatus = !user.isActive;
+    await User.updateOne({ _id: user._id }, { $set: { isActive: newStatus } });
 
-    await logActivity(user._id, user.username, 'USER_STATUS_TOGGLE', { isActive: user.isActive }, req);
+    await logActivity(user._id, user.username, 'USER_STATUS_TOGGLE', { isActive: newStatus }, req);
+
+    const updatedUser = await User.findById(user._id).select('-password');
 
     res.json({
       success: true,
-      message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully`,
-      user
+      message: `User ${newStatus ? 'activated' : 'deactivated'} successfully`,
+      user: updatedUser
     });
   } catch (error) {
     next(error);
@@ -373,21 +379,23 @@ const approveProfileUpdate = async (req, res, next) => {
     }
 
     const proposed = user.pendingUpdates.data;
-    Object.assign(user, proposed);
-    user.pendingUpdates = {
-      data: proposed,
-      requestedAt: user.pendingUpdates.requestedAt,
-      resolvedAt: new Date(),
-      status: 'APPROVED',
-      rejectReason: ''
+    const updatePayload = {
+      ...proposed,
+      pendingUpdates: {
+        data: proposed,
+        requestedAt: user.pendingUpdates.requestedAt,
+        resolvedAt: new Date(),
+        status: 'APPROVED',
+        rejectReason: ''
+      }
     };
-    user.markModified('pendingUpdates');
-    await user.save();
+
+    await User.updateOne({ _id: user._id }, { $set: updatePayload });
 
     await logActivity(user._id, user.username, 'PROFILE_UPDATE_APPROVED', { admin: req.user.username, approvedFields: Object.keys(proposed) }, req);
 
-    const userResponse = user.toObject();
-    delete userResponse.password;
+    const updatedUser = await User.findById(user._id).select('-password');
+    const userResponse = updatedUser.toObject();
 
     res.json({
       success: true,
@@ -407,20 +415,20 @@ const rejectProfileUpdate = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'No pending updates found for this user.' });
     }
 
-    user.pendingUpdates = {
+    const pendingObj = {
       data: user.pendingUpdates.data,
       requestedAt: user.pendingUpdates.requestedAt,
       resolvedAt: new Date(),
       status: 'REJECTED',
       rejectReason: reason || 'Request rejected by Administrator.'
     };
-    user.markModified('pendingUpdates');
-    await user.save();
+
+    await User.updateOne({ _id: user._id }, { $set: { pendingUpdates: pendingObj } });
 
     await logActivity(user._id, user.username, 'PROFILE_UPDATE_REJECTED', { admin: req.user.username, reason }, req);
 
-    const userResponse = user.toObject();
-    delete userResponse.password;
+    const updatedUser = await User.findById(user._id).select('-password');
+    const userResponse = updatedUser.toObject();
 
     res.json({
       success: true,
@@ -434,14 +442,9 @@ const rejectProfileUpdate = async (req, res, next) => {
 
 const clearPendingStatus = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (user && user.pendingUpdates && user.pendingUpdates.status !== 'PENDING') {
-      user.pendingUpdates = null;
-      user.markModified('pendingUpdates');
-      await user.save();
-    }
-    const userObj = user.toObject();
-    delete userObj.password;
+    await User.updateOne({ _id: req.user.id }, { $set: { pendingUpdates: null } });
+    const updatedUser = await User.findById(req.user.id).select('-password');
+    const userObj = updatedUser ? updatedUser.toObject() : null;
     res.json({ success: true, user: userObj });
   } catch (error) {
     next(error);

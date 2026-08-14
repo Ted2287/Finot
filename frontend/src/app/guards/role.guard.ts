@@ -7,14 +7,23 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  const expectedRoles = route.data?.['roles'] as string[] || [];
+  const expectedRoles = (route.data?.['roles'] as string[] || []).map(r => r.toUpperCase());
 
   const currentUser = authService.currentUser();
-  if (authService.isAuthenticated() && currentUser && expectedRoles.includes(currentUser.role)) {
+  const userRole = currentUser?.role?.toUpperCase();
+
+  if (authService.isAuthenticated() && userRole && expectedRoles.includes(userRole)) {
     return true;
   }
 
-  // Redirect to their default homepage
-  router.navigate(['/']);
+  if (authService.isAuthenticated()) {
+    if (userRole === 'ADMIN') {
+      router.navigate(['/dashboard']);
+    } else {
+      router.navigate(['/profile']);
+    }
+  } else {
+    router.navigate(['/auth/login']);
+  }
   return false;
 };

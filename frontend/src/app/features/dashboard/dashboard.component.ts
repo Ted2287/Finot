@@ -21,6 +21,9 @@ export class DashboardComponent implements OnInit {
   stats = signal<DashboardStats | null>(null);
   isLoading = signal<boolean>(true);
 
+  currentPage = signal<number>(1);
+  pageSize = 5;
+
   ngOnInit() {
     this.fetchStats();
   }
@@ -39,6 +42,29 @@ export class DashboardComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  get paginatedLogs(): any[] {
+    const logs = this.stats()?.recentActivity || [];
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return logs.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    const logs = this.stats()?.recentActivity || [];
+    return Math.ceil(logs.length / this.pageSize) || 1;
+  }
+
+  onPrevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  onNextPage() {
+    if (this.currentPage() < this.totalPages) {
+      this.currentPage.update(p => p + 1);
+    }
   }
 
   getActivePercentage(): number {
