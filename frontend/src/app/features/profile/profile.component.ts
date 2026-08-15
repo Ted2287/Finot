@@ -220,20 +220,64 @@ export class ProfileComponent implements OnInit {
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
-    if (file) {
-      this.userService.uploadProfilePicture(file).subscribe({
-        next: (res) => {
-          if (res.success) {
-            this.imageError.set(false);
-            this.toastService.success('Profile picture updated!');
-            this.refreshProfile();
-          }
-        },
-        error: (err) => {
-          this.toastService.error(err.error?.message || 'Failed to upload photo.');
-        }
-      });
+    if (!file) return;
+
+    if (!file.type.match(/image\/*/)) {
+      this.toastService.warning('Please select a valid image file (JPEG, PNG).');
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const img = new Image();
+      img.onload = () => {
+        // High-definition 400x400 avatar canvas scaling
+        const canvas = document.createElement('canvas');
+        const maxDim = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        // Convert base64 data URL to a lightweight File blob
+        fetch(compressedDataUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const compressedFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+            this.userService.uploadProfilePicture(compressedFile).subscribe({
+              next: (res) => {
+                if (res.success) {
+                  this.imageError.set(false);
+                  this.toastService.success('Profile picture updated successfully!');
+                  this.refreshProfile();
+                }
+              },
+              error: (err) => {
+                this.toastService.error(err.error?.message || 'Failed to upload photo.');
+              }
+            });
+          });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
   async onSubmitProfile() {

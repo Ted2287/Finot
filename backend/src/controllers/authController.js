@@ -110,6 +110,14 @@ const login = async (req, res, next) => {
     await logLoginAttempt(user._id, user.username, 'SUCCESS', '', req);
     await logActivity(user._id, user.username, 'LOGIN', {}, req);
 
+    if (user.profilePicture && !user.profilePicture.startsWith('data:') && !user.profilePicture.startsWith('http')) {
+      const fs = require('fs');
+      if (!fs.existsSync(user.profilePicture)) {
+        user.profilePicture = '';
+        await User.updateOne({ _id: user._id }, { $set: { profilePicture: '' } });
+      }
+    }
+
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 

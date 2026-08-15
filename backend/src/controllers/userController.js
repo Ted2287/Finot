@@ -7,6 +7,12 @@ const path = require('path');
 const getProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
+    if (user && user.profilePicture && !user.profilePicture.startsWith('data:') && !user.profilePicture.startsWith('http')) {
+      if (!fs.existsSync(user.profilePicture)) {
+        user.profilePicture = '';
+        await User.updateOne({ _id: user._id }, { $set: { profilePicture: '' } });
+      }
+    }
     res.json({ success: true, user });
   } catch (error) {
     next(error);
@@ -101,29 +107,29 @@ const updateProfile = async (req, res, next) => {
 
 const uploadProfilePicture = async (req, res, next) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'Please upload a file' });
+    let profilePicUrl = req.body.profilePicture || '';
+
+    if (req.file) {
+      if (req.file.path && fs.existsSync(req.file.path)) {
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const mimeType = req.file.mimetype || 'image/jpeg';
+        profilePicUrl = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (err) {
+          console.error('Error removing temp file:', err);
+        }
+      }
+    }
+
+    if (!profilePicUrl) {
+      return res.status(400).json({ success: false, message: 'Please upload or select a valid image file.' });
     }
 
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    // Convert uploaded image to Base64 Data URI for permanent storage across server restarts
-    let profilePicUrl = '';
-    if (req.file.path && fs.existsSync(req.file.path)) {
-      const fileBuffer = fs.readFileSync(req.file.path);
-      const mimeType = req.file.mimetype || 'image/jpeg';
-      profilePicUrl = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
-
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (err) {
-        console.error('Error removing temp file:', err);
-      }
-    } else {
-      profilePicUrl = req.file.path ? req.file.path.replace(/\\/g, '/') : '';
     }
 
     await User.updateOne({ _id: user._id }, { $set: { profilePicture: profilePicUrl } });
