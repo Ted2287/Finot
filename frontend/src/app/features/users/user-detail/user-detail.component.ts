@@ -6,6 +6,7 @@ import { User } from '../../../models/user.model';
 import { LanguageService } from '../../../services/language.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfirmDialogService } from '../../../services/confirm-dialog.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-user-detail',
@@ -28,6 +29,22 @@ export class UserDetailComponent implements OnInit {
 
   user = signal<User | null>(null);
   isLoading = signal<boolean>(true);
+  imageError = signal<boolean>(false);
+
+  getUserProfileImage(): string | null {
+    if (this.imageError()) return null;
+    const user = this.user();
+    if (!user || !user.profilePicture) return null;
+    if (user.profilePicture.startsWith('data:') || user.profilePicture.startsWith('http')) {
+      return user.profilePicture;
+    }
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    return `${baseUrl}/${user.profilePicture}`;
+  }
+
+  onImageError() {
+    this.imageError.set(true);
+  }
   error = signal<string | null>(null);
 
   ngOnInit() {

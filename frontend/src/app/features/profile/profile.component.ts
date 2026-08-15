@@ -95,12 +95,21 @@ export class ProfileComponent implements OnInit {
     return `${first}${father}` || 'U';
   }
 
+  imageError = signal<boolean>(false);
+
   getProfileImageUrl(): string | null {
+    if (this.imageError()) return null;
     const user = this.authService.currentUser();
     if (!user || !user.profilePicture) return null;
-    if (user.profilePicture.startsWith('http')) return user.profilePicture;
+    if (user.profilePicture.startsWith('data:') || user.profilePicture.startsWith('http')) {
+      return user.profilePicture;
+    }
     const baseUrl = environment.apiUrl.replace('/api', '');
     return `${baseUrl}/${user.profilePicture}`;
+  }
+
+  onImageError() {
+    this.imageError.set(true);
   }
 
   initForms(user: User | null) {
@@ -215,6 +224,7 @@ export class ProfileComponent implements OnInit {
       this.userService.uploadProfilePicture(file).subscribe({
         next: (res) => {
           if (res.success) {
+            this.imageError.set(false);
             this.toastService.success('Profile picture updated!');
             this.refreshProfile();
           }

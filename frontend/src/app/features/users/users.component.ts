@@ -7,6 +7,7 @@ import { User } from '../../models/user.model';
 import { LanguageService } from '../../services/language.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-users',
@@ -268,6 +269,19 @@ export class UsersComponent implements OnInit {
         this.toastService.error(err.error?.message || 'Failed to reject profile update.');
       }
     });
+  }
+
+  getUserProfileImage(user: User): string | null {
+    if (!user || !user.profilePicture) return null;
+    if (user.profilePicture.startsWith('data:') || user.profilePicture.startsWith('http')) {
+      return user.profilePicture;
+    }
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    return `${baseUrl}/${user.profilePicture}`;
+  }
+
+  onUserImgError(user: User) {
+    user.profilePicture = '';
   }
 
   getPendingFieldKeys(user: User): string[] {

@@ -59,8 +59,8 @@
         <div class="relative shrink-0">
           <div class="h-28 w-28 sm:h-32 sm:w-32 rounded-3xl overflow-hidden bg-gradient-to-br from-primary-500 to-indigo-600 p-1 shadow-2xl">
             <div class="h-full w-full rounded-[22px] bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden">
-              <img *ngIf="user()?.profilePicture" [src]="user()?.profilePicture" class="h-full w-full object-cover">
-              <span *ngIf="!user()?.profilePicture" class="text-3xl sm:text-4xl font-extrabold text-primary-600 dark:text-primary-400">
+              <img *ngIf="getUserProfileImage()" [src]="getUserProfileImage()" (error)="onImageError()" class="h-full w-full object-cover">
+              <span *ngIf="!getUserProfileImage()" class="text-3xl sm:text-4xl font-extrabold text-primary-600 dark:text-primary-400">
                 {{ getInitials(user()!) }}
               </span>
             </div>

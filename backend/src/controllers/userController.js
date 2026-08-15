@@ -106,25 +106,34 @@ const uploadProfilePicture = async (req, res, next) => {
     }
 
     const user = await User.findById(req.user.id);
-    
-    // Delete old profile picture if exists
-    if (user.profilePicture && fs.existsSync(user.profilePicture)) {
-      try {
-        fs.unlinkSync(user.profilePicture);
-      } catch (err) {
-        console.error('Error deleting old picture:', err);
-      }
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const newPath = req.file.path.replace(/\\/g, '/');
-    await User.updateOne({ _id: user._id }, { $set: { profilePicture: newPath } });
+    // Convert uploaded image to Base64 Data URI for permanent storage across server restarts
+    let profilePicUrl = '';
+    if (req.file.path && fs.existsSync(req.file.path)) {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const mimeType = req.file.mimetype || 'image/jpeg';
+      profilePicUrl = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (err) {
+        console.error('Error removing temp file:', err);
+      }
+    } else {
+      profilePicUrl = req.file.path ? req.file.path.replace(/\\/g, '/') : '';
+    }
+
+    await User.updateOne({ _id: user._id }, { $set: { profilePicture: profilePicUrl } });
 
     await logActivity(user._id, user.username, 'PROFILE_PICTURE_CHANGE', {}, req);
 
     res.json({
       success: true,
-      message: 'Profile picture updated',
-      profilePicture: newPath
+      message: 'Profile picture updated successfully',
+      profilePicture: profilePicUrl
     });
   } catch (error) {
     next(error);

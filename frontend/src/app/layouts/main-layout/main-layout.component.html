@@ -178,12 +178,14 @@
             </div>
 
             <!-- Profile Avatar -->
-            <div class="h-9 w-9 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shadow-premium shrink-0">
+            <div class="h-9 w-9 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shadow-premium shrink-0 font-bold text-xs text-primary-600">
               <img *ngIf="getProfileImageUrl()" 
                    [src]="getProfileImageUrl()" 
-                   alt="avatar" 
+                   (error)="onImageError()"
                    class="h-full w-full object-cover">
-              <span *ngIf="!getProfileImageUrl()" class="material-icons text-primary-500 text-xl">person</span>
+              <span *ngIf="!getProfileImageUrl()">
+                {{ authService.currentUser()?.firstName?.charAt(0) }}{{ authService.currentUser()?.fatherName?.charAt(0) || authService.currentUser()?.lastName?.charAt(0) }}
+              </span>
             </div>
 
             <span class="material-icons text-slate-400 text-sm hidden md:inline-block transition-transform duration-200"
@@ -203,12 +205,14 @@
             
             <!-- User Header Summary -->
             <div class="p-4 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-3">
-              <div class="h-10 w-10 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+              <div class="h-10 w-10 rounded-xl bg-primary-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shrink-0 font-bold text-sm text-primary-600">
                 <img *ngIf="getProfileImageUrl()" 
                      [src]="getProfileImageUrl()" 
-                     alt="avatar" 
+                     (error)="onImageError()"
                      class="h-full w-full object-cover">
-                <span *ngIf="!getProfileImageUrl()" class="material-icons text-primary-500 text-2xl">person</span>
+                <span *ngIf="!getProfileImageUrl()">
+                  {{ authService.currentUser()?.firstName?.charAt(0) }}{{ authService.currentUser()?.fatherName?.charAt(0) || authService.currentUser()?.lastName?.charAt(0) }}
+                </span>
               </div>
               <div class="min-w-0 flex-1">
                 <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">

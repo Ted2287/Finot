@@ -153,8 +153,8 @@
                 <div class="flex items-center gap-3">
                   <a [routerLink]="['/users', u._id]" class="relative shrink-0 group">
                     <div class="h-10 w-10 rounded-xl bg-primary-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden font-bold text-primary-500 group-hover:scale-105 transition-transform duration-200">
-                      <img *ngIf="u.profilePicture" [src]="u.profilePicture" class="h-full w-full object-cover">
-                      <span *ngIf="!u.profilePicture" class="text-base">{{ u.firstName.charAt(0) }}{{ u.fatherName.charAt(0) }}</span>
+                      <img *ngIf="getUserProfileImage(u)" [src]="getUserProfileImage(u)" (error)="onUserImgError(u)" class="h-full w-full object-cover">
+                      <span *ngIf="!getUserProfileImage(u)" class="text-base">{{ u.firstName.charAt(0) }}{{ u.fatherName.charAt(0) }}</span>
                     </div>
                   </a>
                   <div>

@@ -54,12 +54,21 @@ export class MainLayoutComponent {
     this.authService.logout().subscribe();
   }
 
+  imageError = signal<boolean>(false);
+
   getProfileImageUrl(): string | null {
+    if (this.imageError()) return null;
     const user = this.authService.currentUser();
     if (!user || !user.profilePicture) return null;
-    if (user.profilePicture.startsWith('http')) return user.profilePicture;
+    if (user.profilePicture.startsWith('data:') || user.profilePicture.startsWith('http')) {
+      return user.profilePicture;
+    }
     const baseUrl = environment.apiUrl.replace('/api', '');
     return `${baseUrl}/${user.profilePicture}`;
+  }
+
+  onImageError() {
+    this.imageError.set(true);
   }
 
   getCurrentPage(): string {
