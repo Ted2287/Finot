@@ -10,18 +10,21 @@ const connectDB = async () => {
     });
     console.log(`MongoDB Connected (Primary Atlas): ${conn.connection.host}`);
   } catch (error) {
-    console.warn(`Primary MongoDB Atlas Connection Warning: ${error.message}`);
-    console.log(`Attempting fallback connection to Local MongoDB (${fallbackUri})...`);
+    console.error(`MongoDB Atlas Connection Failed: ${error.message}`);
     
-    try {
-      const conn = await mongoose.connect(fallbackUri, {
-        serverSelectionTimeoutMS: 5000
-      });
-      console.log(`MongoDB Connected (Local Fallback): ${conn.connection.host}`);
-    } catch (fallbackError) {
-      console.error(`MongoDB Connection Error: ${fallbackError.message}`);
-      process.exit(1);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Attempting fallback connection to Local MongoDB (${fallbackUri})...`);
+      try {
+        const conn = await mongoose.connect(fallbackUri, {
+          serverSelectionTimeoutMS: 5000
+        });
+        console.log(`MongoDB Connected (Local Fallback): ${conn.connection.host}`);
+        return;
+      } catch (fallbackError) {
+        console.error(`Local MongoDB Fallback Error: ${fallbackError.message}`);
+      }
     }
+    process.exit(1);
   }
 };
 
